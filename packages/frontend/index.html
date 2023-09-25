@@ -18,10 +18,20 @@
             background: radial-gradient(#222, #000);
             display: block;
         }
+
+        button {
+            position: fixed;
+            top: 100px;
+            left: 100px;
+        }
     </style>
 </head>
 
 <body>
+    <script>
+        var ws = new WebSocket('ws://localhost:5000');
+    </script>
+    <button onclick="ws.send('Ping')">Ping</button>
     <canvas id="game-canvas"></canvas>
     <script type="module" src="./src/gameClient.ts"></script>
 </body>
