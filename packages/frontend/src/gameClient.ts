@@ -1,5 +1,6 @@
 import { Application, Container, Graphics } from "pixi.js";
 import { Layers } from "./RenderingLayers.js";
+import { onMouseDown, onMouseUp, onPointerMove, takeAllFromInputQueue } from "./InputSystem.js";
 
 const gameCanvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 
@@ -30,6 +31,11 @@ const resize = () => {
 window.addEventListener("load", resize);
 window.addEventListener("resize", resize);
 
+// Subscribe to input events
+document.addEventListener('pointermove', onPointerMove);
+document.addEventListener('mousedown', onMouseDown);
+document.addEventListener('mouseup', onMouseUp);
+
 const layers: Layers = {
     default: new Container(),
     foreground: new Container(),
@@ -38,13 +44,6 @@ const layers: Layers = {
 
 app.stage.addChild(layers.default, layers.foreground, layers.ui);
 
-let boundaries = new Graphics();
-boundaries.lineStyle(10, 0xffffff, 0.5);
-boundaries.drawRect(5, 5, 100, 100);
-layers.default.addChild(boundaries);
-
-const start = performance.now();
 app.ticker.add((_delta) => {
-    const elapsed = performance.now() - start;
-    boundaries.x = 100.0 + Math.cos(elapsed / 250.0) * 100.0;
+    let m = takeAllFromInputQueue();
 });
