@@ -1,0 +1,16 @@
+{
+    "name": "astropirates",
+    "license": "MIT",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "dev": "concurrently npm:dev:*",
+        "dev:backend": "npm run dev --prefix packages/backend",
+        "dev:frontend": "npm run dev --prefix packages/frontend"
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.1"
+    }
+}

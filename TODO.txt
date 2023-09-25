@@ -1,0 +1,67 @@
+- Backend
+	- Networking
+		- Receive and send data
+		- Tickrate
+		- Add client
+        - Serialization
+		- Get and store player input
+		- Compression?
+        - Send data to players
+            - Positions and rotations
+            - Deaths
+            - Warps
+            - Names
+            - Scoreboard
+    		- Send only what the player can see?
+	- Main game loop
+		- Timing
+		- Get frame specific input
+		- AI (To be expanded)
+		- Move
+			- Players (From user input)
+			- Players (From AI)
+			- Bullets
+            - Limit (asteroid belt?)
+		- Shoot
+		- Warp
+		- Collide
+			- Player/bullet
+			- Player/limit
+		- Implement Scoreboard
+		- Respawn invencibility
+	- Test screen to see server simulation in real time
+	- Performance information screen
+- Front end
+	- Render (basic)
+		- Stars
+		- Ship
+		- Bullet
+		- Asteroids belt?
+	- Input
+        - Input to console.log - next
+		- Move
+		- Shoot
+	- Networking
+		- Store user input queue
+		- Send user input
+		- Debounce input
+		- Receive and store frame data / Deserialization
+            - Object pool?
+			- Create
+			- Update
+			- Delete
+	- Main game loop
+		- Move
+			- Players
+			- Bullets
+		- Implement Scoreboard
+		- Respawn invencibility animation
+	- Rendering loop
+		- interpolation
+		- Update each renderer's position
+    - UI
+        - Name choosing screen
+        - High score screen
+            - Layout
+            - Fetch from database
+
