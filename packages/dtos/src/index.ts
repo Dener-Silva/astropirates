@@ -1,6 +1,5 @@
 export type Input = {
-    angle: number,
-    magnitude: number
-} | {
-    shoot: boolean
+    angle?: number,
+    magnitude?: number
+    shoot?: boolean
 }
