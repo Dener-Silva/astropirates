@@ -19,9 +19,9 @@ export function runWebSocketServer(wss: WebSocketServer) {
                 const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
                 const message = ClientMessage.deserialize(dataView);
 
-                switch (message?.topic) {
+                switch (message.topic) {
                     case ClientTopic.SetName:
-                        addPlayer(id, message.firstName!, message.secondName!);
+                        addPlayer(id, message.nickname!);
                         break;
                     case ClientTopic.Input:
                         registerInputs(id, message.inputs!);

@@ -14,12 +14,14 @@ expect.extend({
         // First serialization might fail with RangeError.
         try {
             objectUnderTest.serialize(dataView);
-        } catch (e) {
-            if (e instanceof RangeError) {
+        } catch (e: any) {
+            if (e.name === 'RangeError') {
                 return {
                     message: () => `Object tried to write outside of its byteLength`,
                     pass: false,
                 };
+            } else {
+                throw e;
             }
         }
         const resultWithFs = new Uint8Array(typedArray);
