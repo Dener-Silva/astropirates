@@ -1,4 +1,4 @@
-import { Input } from 'dtos';
+import { Input, InputTypes } from 'dtos';
 
 const inputQueue: Input[] = [];
 
@@ -22,7 +22,11 @@ function mapPointerMovement(event: PointerEvent): Input {
     let magnitude = Math.min(mouseDistance / maxDistance, 1);
 
     let angle = Math.atan2(mouseDistanceY, mouseDistanceX);
-    return { angle, magnitude };
+    // TODO set time
+    const input = new Input(InputTypes.Move, 0);
+    input.angle = angle;
+    input.magnitude = magnitude;
+    return input;
 }
 
 export function onPointerMove(e: PointerEvent) {
@@ -30,9 +34,9 @@ export function onPointerMove(e: PointerEvent) {
 }
 
 export function onMouseDown() {
-    inputQueue.push({ shoot: true });
+    inputQueue.push(new Input(InputTypes.StartShooting, 0));
 }
 
 export function onMouseUp() {
-    inputQueue.push({ shoot: false });
+    inputQueue.push(new Input(InputTypes.StopShooting, 0));
 }

@@ -41,8 +41,8 @@ export class Input {
         dataView.setUint8(0, this.type);
         dataView.setFloat64(1, this.time);
         if (this.type === InputTypes.Move) {
-            dataView.setFloat64(9, this.angle || 0);
-            dataView.setFloat64(17, this.magnitude || 0);
+            dataView.setFloat64(9, this.angle!);
+            dataView.setFloat64(17, this.magnitude!);
         }
     }
 }
