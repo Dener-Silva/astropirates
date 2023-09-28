@@ -9,8 +9,9 @@
         "dev": "concurrently npm:dev:*",
         "dev:backend": "npm run dev --prefix packages/backend",
         "dev:frontend": "npm run dev --prefix packages/frontend",
-        "test": "npm run test:backend; npm run test:frontend",
+        "test": "npm run test:dtos && npm run test:backend && npm run test:frontend",
         "test:backend": "npm test --prefix packages/backend",
+        "test:dtos": "npm test --prefix packages/dtos",
         "test:frontend": "npm test --prefix packages/frontend"
     },
     "devDependencies": {

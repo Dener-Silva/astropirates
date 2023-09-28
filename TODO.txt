@@ -1,9 +1,12 @@
 - Backend
 	- Networking
-		- Receive and send data
-		- Tickrate
-		- Add client
-        - Serialization
+		- Receive data - OK
+		- Send data - OK
+		- Tickrate - OK
+		- Add client - OK
+        - Serialization (with unit tests)
+			- Client - OK
+			- Server
 		- Get and store player input
 		- Compression?
         - Send data to players
@@ -42,9 +45,9 @@
 		- Move
 		- Shoot
 	- Networking
-		- Store user input queue
+		- Store user input queue - OK
 		- Send user input
-		- Debounce input
+		- Debounce input?
 		- Receive and store frame data / Deserialization
             - Object pool?
 			- Create
@@ -65,3 +68,8 @@
             - Layout
             - Fetch from database
 
+
+// // Workaround for Node ArrayBuffer type missing resize method (it is supported since Node 20)
+// type ResizableArrayBuffer = {
+//     resize: (bytes: number) => void
+// } & ArrayBuffer;

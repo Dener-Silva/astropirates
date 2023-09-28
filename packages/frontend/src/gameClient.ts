@@ -1,7 +1,10 @@
-import { Application, Container, Graphics } from "pixi.js";
+import { Application, Container } from "pixi.js";
 import { Layers } from "./RenderingLayers.js";
-import { onMouseDown, onMouseUp, onPointerMove, takeAllFromInputQueue } from "./InputSystem.js";
+import { onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.js";
+import { ClientMessage, ClientTopic, FirstName, SecondName } from "dtos";
 
+const ws = new WebSocket('ws://localhost:5000');
+ws.addEventListener("error", console.error);
 const gameCanvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 
 const app = new Application({
@@ -44,6 +47,33 @@ const layers: Layers = {
 
 app.stage.addChild(layers.default, layers.foreground, layers.ui);
 
-app.ticker.add((_delta) => {
-    let m = takeAllFromInputQueue();
+ws.addEventListener("message", (data) => {
+    // console.log(data);
 });
+
+// "Choose Your Name" Form
+const nameForm = document.getElementById("name-form") as HTMLFormElement;
+function populateSelect(select: HTMLSelectElement, enum_: Object) {
+    for (let [key, value] of Object.entries(enum_)) {
+        if (isNaN(Number(key))) {
+            const option = new Option(key, String(value));
+            select.appendChild(option);
+        }
+    }
+}
+populateSelect(nameForm.firstName, FirstName);
+populateSelect(nameForm.secondName, SecondName);
+nameForm.onsubmit = (e) => {
+    e.preventDefault();
+    const clientMessage = new ClientMessage(ClientTopic.SetName);
+    clientMessage.firstName = nameForm.firstName.value;
+    clientMessage.secondName = nameForm.secondName.value;
+
+    const dataView = new DataView(new ArrayBuffer(clientMessage.byteLength));
+    clientMessage.serialize(dataView);
+    ws.send(dataView);
+}
+
+// app.ticker.add((_delta) => {
+//     let m = takeAllFromInputQueue();
+// });
