@@ -31,7 +31,8 @@
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
     "types": [
       "vite/client",
-      "jest"
+      "jest",
+      "../dtos/avro-js.d.ts"
     ],
     // "allowUmdGlobalAccess": true,                     /* Allow accessing UMD globals from modules. */
     // "moduleSuffixes": [],                             /* List of file name suffixes to search when resolving a module. */

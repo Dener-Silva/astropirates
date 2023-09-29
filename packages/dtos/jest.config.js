@@ -12,6 +12,5 @@ export default {
         useESM: true,
       },
     ],
-  },
-  setupFilesAfterEnv: ['./test/ByteLengthCustomMatcher.ts']
+  }
 };

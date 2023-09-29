@@ -1,6 +1,5 @@
-import { ClientTopic } from "dtos";
+import { ClientTopic, NeverError, inputType, setNameType, setNameResponseType, SetNameResponse, ServerTopic, topicType } from "dtos";
 import { WebSocketServer } from "ws";
-import { ClientMessage } from "dtos";
 import { createGameServer } from "./GameServer.js";
 
 export function runWebSocketServer(wss: WebSocketServer) {
@@ -15,16 +14,25 @@ export function runWebSocketServer(wss: WebSocketServer) {
 
         ws.on('message', (data: Buffer) => {
             try {
-                const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
-                const message = ClientMessage.deserialize(dataView);
-
-                switch (message.topic) {
+                const topic: ClientTopic = topicType.fromBuffer(data, undefined, true);
+                switch (topic) {
                     case ClientTopic.SetName:
-                        gameServer.addPlayer(id, message.nickname!);
+                        const message = setNameType.fromBuffer(data);
+                        const success = gameServer.addPlayer(id, message.nickname);
+                        const response: SetNameResponse = {
+                            topic: ServerTopic.SetNameResponse,
+                            id,
+                            nickname: message.nickname,
+                            success
+                        }
+                        console.log(setNameResponseType.toBuffer(response))
+                        ws.send(setNameResponseType.toBuffer(response))
                         break;
                     case ClientTopic.Input:
-                        gameServer.registerInputs(id, message.inputs!);
+                        gameServer.registerInputs(id, inputType.fromBuffer(data));
                         break;
+                    default:
+                        throw new NeverError(topic, `Unknown message topic: ${topic}`);
                 }
             } catch (e) {
                 console.error(e);
@@ -38,7 +46,7 @@ export function runWebSocketServer(wss: WebSocketServer) {
 
     setInterval(() => {
         for (const ws of wss.clients) {
-            ws.send(performance.now());
+            // TODO
         }
     }, 50)
 }

@@ -1,10 +1,11 @@
 declare module "avro-js" {
-    export const parse: (schema: any, opts?: any) => Type;
+    export const parse: <T>(schema: any, opts?: any) => Type<T>;
 
-    export type Type = {
-        toBuffer: (obj: any) => Buffer
-        fromBuffer: (buffer: Buffer) => any
-        isValid: (obj: any) => boolean
-        random: () => any
+    export type Type<T> = {
+        toBuffer: (obj: T, resolver?: any) => ArrayBufferLike
+        fromBuffer: (buffer: ArrayBufferLike, resolver?: any, noCheck?: boolean) => T
+        isValid: (obj: T) => boolean
+        createResolver: (type: Type) => any
+        random: () => T
     }
 }

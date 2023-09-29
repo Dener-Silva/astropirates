@@ -1,4 +1,4 @@
-import { onMouseDown, onMouseUp, onPointerMove, takeAllFromInputQueue } from "../src/InputSystem.js";
+import { onMouseDown, onMouseUp, onPointerMove, getInput } from "../src/InputSystem.js";
 
 global.window.innerWidth = 200;
 global.window.innerHeight = 200;
@@ -9,11 +9,10 @@ test.each([
 ])('Store and retrieve mouse movement at x=%i y=%i', (pageX, pageY, angle, magnitude) => {
     onPointerMove({ pageX, pageY } as PointerEvent);
 
-    const inputQueue = takeAllFromInputQueue();
+    const input = getInput();
 
-    expect(inputQueue.length).toBe(1);
-    expect(inputQueue[0].angle).toBe(angle);
-    expect(inputQueue[0].magnitude).toBe(magnitude);
+    expect(input.angle).toBe(angle);
+    expect(input.magnitude).toBe(magnitude);
 });
 
 test.each([
@@ -22,18 +21,17 @@ test.each([
 ])('Limit magnitude to 1 at x=%i y=%i', (pageX, pageY, angle) => {
     onPointerMove({ pageX, pageY } as PointerEvent);
 
-    const inputQueue = takeAllFromInputQueue();
+    const input = getInput();
 
-    expect(inputQueue.length).toBe(1);
-    expect(inputQueue[0].angle).toBe(angle);
-    expect(inputQueue[0].magnitude).toBe(1);
+    expect(input.angle).toBe(angle);
+    expect(input.magnitude).toBe(1);
 });
 
-test('Should take all inputs from queue', () => {
+test('Should detect quick press', () => {
     onPointerMove({ pageX: 0, pageY: 1 } as PointerEvent);
     onMouseDown();
     onMouseUp();
 
-    expect(takeAllFromInputQueue()).toHaveLength(3);
-    expect(takeAllFromInputQueue()).toHaveLength(0);
+    expect(getInput().shoot).toBeTruthy();
+    expect(getInput().shoot).toBeFalsy();
 });

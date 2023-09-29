@@ -1,4 +1,4 @@
 export * from "./NeverError.js"
-export * from './Enums.js';
-export * from './client/ClientMessage.js';
-export * from './client/Input.js';
+export * from './ClientMessage.js';
+export * from './ServerMessage.js';
+export * from './TopicType.js';

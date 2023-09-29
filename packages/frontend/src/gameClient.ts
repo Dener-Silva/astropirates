@@ -1,9 +1,11 @@
 import { Application, Container } from "pixi.js";
 import { Layers } from "./RenderingLayers.js";
 import { onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.js";
-import { ClientMessage, ClientTopic } from "dtos";
+import { ClientTopic, SetName, setNameResponseType, setNameType } from "dtos";
+import { Buffer } from "buffer";
 
 const ws = new WebSocket('ws://localhost:5000');
+ws.binaryType = 'arraybuffer';
 ws.addEventListener("error", console.error);
 const gameCanvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 
@@ -47,20 +49,21 @@ const layers: Layers = {
 
 app.stage.addChild(layers.default, layers.foreground, layers.ui);
 
-ws.addEventListener("message", (data) => {
-    // console.log(data);
+
+
+ws.addEventListener("message", ({ data }) => {
+    console.log(setNameResponseType.fromBuffer(Buffer.from(data)))
 });
 
 // "Choose Your Name" Form
 const nameForm = document.getElementById("name-form") as HTMLFormElement;
 nameForm.onsubmit = (e) => {
     e.preventDefault();
-    const clientMessage = new ClientMessage(ClientTopic.SetName);
-    clientMessage.nickname = nameForm.nickname.value;
-
-    const dataView = new DataView(new ArrayBuffer(clientMessage.byteLength));
-    clientMessage.serialize(dataView);
-    ws.send(dataView);
+    const clientMessage: SetName = {
+        topic: ClientTopic.SetName,
+        nickname: nameForm.nickname.value
+    };
+    ws.send(setNameType.toBuffer(clientMessage));
 }
 
 // app.ticker.add((_delta) => {
