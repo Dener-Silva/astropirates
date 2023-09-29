@@ -59,6 +59,10 @@ importers:
         version: 5.2.2
 
   packages/dtos:
+    dependencies:
+      avro-js:
+        specifier: ^1.11.3
+        version: 1.11.3
     devDependencies:
       '@types/jest':
         specifier: ^29.5.5
@@ -1794,6 +1798,12 @@ packages:
   /asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
     dev: true
+
+  /avro-js@1.11.3:
+    resolution: {integrity: sha512-B1b0wI5iwSkVwj3RQWRzW99/LGoYl6df9j1kWime8r8b0dXCdKU7t7mEOFkOpQFaT/I9JXaL7KAIxM+/3TUk1A==}
+    dependencies:
+      underscore: 1.13.6
+    dev: false
 
   /babel-jest@29.7.0(@babel/core@7.23.0):
     resolution: {integrity: sha512-BrvGY3xZSwEcCzKvKsCi2GgHqDqsYkOP4/by5xCgIwGXQxIEh+8ew3gmrE1y7XRR6LHZIj6yLYnUi/mm2KXKBg==}
@@ -4110,6 +4120,10 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
     dev: true
+
+  /underscore@1.13.6:
+    resolution: {integrity: sha512-+A5Sja4HP1M08MaXya7p5LvjuM7K6q/2EaC0+iovj/wOcMsTzMvDFbasi/oSapiwOlt252IqsKqPjCl7huKS0A==}
+    dev: false
 
   /universalify@0.2.0:
     resolution: {integrity: sha512-CJ1QgKmNg3CwvAv/kOFmtnEN05f0D/cn9QntgNOQlQF9dgvVTHj3t+8JPdjqawCHk7V/KA+fbUqzZ9XWhcqPUg==}

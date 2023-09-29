@@ -1,16 +1,15 @@
 import { ClientTopic } from "dtos";
-import { WebSocketServer, WebSocket } from "ws";
+import { WebSocketServer } from "ws";
 import { ClientMessage } from "dtos";
-import { addPlayer, registerInputs } from "./gameServer.js";
+import { createGameServer } from "./GameServer.js";
 
 export function runWebSocketServer(wss: WebSocketServer) {
 
-    const activeSockets = new Map<number, WebSocket>();
+    const gameServer = createGameServer();
     let currentId = 0;
 
     wss.on('connection', (ws) => {
         const id = currentId++;
-        activeSockets.set(id, ws);
 
         ws.on('error', console.error);
 
@@ -21,10 +20,10 @@ export function runWebSocketServer(wss: WebSocketServer) {
 
                 switch (message.topic) {
                     case ClientTopic.SetName:
-                        addPlayer(id, message.nickname!);
+                        gameServer.addPlayer(id, message.nickname!);
                         break;
                     case ClientTopic.Input:
-                        registerInputs(id, message.inputs!);
+                        gameServer.registerInputs(id, message.inputs!);
                         break;
                 }
             } catch (e) {
@@ -32,11 +31,13 @@ export function runWebSocketServer(wss: WebSocketServer) {
             }
         });
 
-        ws.on('close', () => activeSockets.delete(id));
+        ws.on('close', () => {
+            gameServer.removePlayer(id)
+        });
     });
 
     setInterval(() => {
-        for (const ws of activeSockets.values()) {
+        for (const ws of wss.clients) {
             ws.send(performance.now());
         }
     }, 50)

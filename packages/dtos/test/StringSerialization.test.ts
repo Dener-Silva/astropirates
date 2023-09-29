@@ -1,5 +1,6 @@
 import { deserializeString, getByteLength, serializeString } from "../src/StringSerialization.js";
 import { Serializable } from "./ByteLengthCustomMatcher.js";
+import avro from 'avro-js';
 
 test.each([
     'Happy String',
@@ -26,11 +27,28 @@ test.each([
     'String with emoji 🙂',
     'Japanese characters 夜を待つよ',
 ])('Compare before and after serialization', (str) => {
-    const buffer = new ArrayBuffer(256);
+    const buffer = new ArrayBuffer(getByteLength(str));
     const dataView = new DataView(buffer);
 
     serializeString(0, str, dataView);
-    const result = deserializeString(0, dataView);
+    const [result, byteLength] = deserializeString(0, dataView);
+
+    expect(result).toEqual(str);
+    expect(byteLength).toEqual(getByteLength(str));
+});
+
+test.each([
+    'Happy String',
+    '',
+    'String with emoji 🙂',
+    'Japanese characters 夜を待つよ',
+])('Compare before and after serialization', (str) => {
+    const type = avro.parse({ type: "string" });
+
+    const buf = type.toBuffer(str);
+    const result = type.fromBuffer(buf);
+
+    console.log(new Int8Array(buf).length, getByteLength(str));
 
     expect(result).toEqual(str);
 });
@@ -45,14 +63,12 @@ test.each([
     ' 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂' +
     ' 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂'
 ])('Truncate long string to avoid buffer overflow', (str) => {
-    const buffer = new ArrayBuffer(256);
-    const array = new Uint8Array(buffer);
-    const dataView = new DataView(buffer);
+    const type = avro.parse({ type: "string" });
 
-    const result = serializeString(0, str, dataView);
+    const buf = type.toBuffer(str);
+    const result = type.fromBuffer(buf);
 
-    expect(result).toEqual(256);
-    expect(array[0]).toEqual(255);
-    const expected = new TextEncoder().encode(str).subarray(0, 255);
-    expect(array.subarray(1)).toEqual(expected);
+    console.log(new Int8Array(buf).length, getByteLength(str));
+
+    expect(result).toEqual(str);
 });

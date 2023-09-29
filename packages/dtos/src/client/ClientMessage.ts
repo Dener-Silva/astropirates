@@ -41,7 +41,7 @@ export class ClientMessage {
         const instance = new ClientMessage(topic);
         switch (topic) {
             case ClientTopic.SetName:
-                instance.nickname = deserializeString(1, dataView).trim();
+                instance.nickname = deserializeString(1, dataView)[0].trim();
                 break;
             case ClientTopic.Input:
                 instance.inputs = deserializeInputs(new DataView(dataView.buffer, dataView.byteOffset + 1));
@@ -53,13 +53,12 @@ export class ClientMessage {
     }
 
     serialize(dataView: DataView): void {
+        dataView.setUint8(0, this.topic);
         switch (this.topic) {
             case ClientTopic.SetName:
-                dataView.setUint8(0, this.topic);
                 serializeString(1, this.nickname!, dataView);
                 break;
             case ClientTopic.Input:
-                dataView.setUint8(0, this.topic);
                 let i = 1;
                 for (const input of this.inputs!) {
                     input.serialize(new DataView(dataView.buffer, dataView.byteOffset + i))

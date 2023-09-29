@@ -4,6 +4,6 @@ export enum ClientTopic {
 }
 
 export enum ServerTopic {
-    "SetID",
+    "SetNameResponse",
     "UpdateGameState"
 }

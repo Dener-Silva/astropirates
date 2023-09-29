@@ -33,10 +33,10 @@ export function serializeString(byteOffset: number, str: string, target: DataVie
  * Read string from source DataView.
  * @param source DataView to read from
  * @param byteOffset Offset on source DataView
- * @returns Decoded string
+ * @returns Array with decoded string and byte length, including 1-byte length prefix
  */
-export function deserializeString(byteOffset: number, source: DataView): string {
+export function deserializeString(byteOffset: number, source: DataView): [str: string, byteLength: number] {
     const runLength = source.getInt8(byteOffset);
     const sourceArray = new Uint8Array(source.buffer, source.byteOffset + byteOffset + 1, runLength);
-    return new TextDecoder().decode(sourceArray);
+    return [new TextDecoder().decode(sourceArray), runLength + 1];
 }
