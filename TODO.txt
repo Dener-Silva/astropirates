@@ -4,24 +4,24 @@
 		- Send data - OK
 		- Tickrate - OK
 		- Add client - OK
-        - Serialization (with unit tests)
+        - Serialization (with unit tests) - OK
 			- Client - OK
-			- Server
-		- Get and store player input
+			- Server - OK
+		- Get and store player input - OK
 		- Compression?
         - Send data to players
-            - Positions and rotations
+            - Positions and rotations - OK
             - Deaths
             - Warps
             - Names
             - Scoreboard
     		- Send only what the player can see?
 	- Main game loop
-		- Timing
-		- Get frame specific input
+		- Timing - OK
+		- Get frame specific input - OK
 		- AI (To be expanded)
 		- Move
-			- Players (From user input)
+			- Players (From user input) - OK
 			- Players (From AI)
 			- Bullets
             - Limit (asteroid belt?)
@@ -37,25 +37,31 @@
 - Front end
 	- Render (basic)
 		- Stars
-		- Ship
+		- Ship - OK
 		- Bullet
 		- Asteroids belt?
 	- Input
         - Input to console.log - OK
-		- Move - buggy
-		- Shoot
+		- Move - OK
+		- Shoot - OK
 	- Networking
 		- Store user input queue - OK
-		- Send user input
-		- Debounce input?
+		- Send user input - OK
+		- Debounce input - OK
 		- Receive and store frame data / Deserialization
             - Object pool?
 			- Create
+				- Players - OK
+				- Bullets
 			- Update
+				- Players - OK
+				- Bullets
 			- Delete
+				- Players
+				- Bullets
 	- Main game loop
 		- Move
-			- Players
+			- Players - OK
 			- Bullets
 		- Implement Scoreboard
 		- Respawn invencibility animation
@@ -63,7 +69,7 @@
 		- interpolation
 		- Update each renderer's position
     - UI
-        - Name choosing screen
+        - Name choosing screen - OK
         - High score screen
             - Layout
             - Fetch from database

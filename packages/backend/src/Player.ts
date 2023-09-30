@@ -20,7 +20,7 @@ export class Player {
 
     move(input: Input) {
         // Rotate
-        // Remember that on Pixi the world coordinates are inverted on the Y axis
+        // All coordinates on this app are inverted on the Y axis
         this.rotation = rotateTowards(this.rotation, input.angle, maxRotationSpeed * delta);
 
         // Calculate speed

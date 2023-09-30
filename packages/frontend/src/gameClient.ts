@@ -1,8 +1,9 @@
-import { Application, Container } from "pixi.js";
-import { Layers } from "./RenderingLayers.js";
+import { Application } from "pixi.js";
 import { getInput, onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.js";
-import { ClientTopic, GameUpdate, ServerTopic, SetNickname, gameUpdateType, inputType, setNicknameResponseType, setNicknameType, tickrateType, topicType } from "dtos";
+import { ClientTopic, ServerTopic, SetNickname, gameUpdateType, inputType, setNicknameResponseType, setNicknameType, tickrateType, topicType } from "dtos";
 import { Buffer } from "buffer";
+import { Renderer } from "./rendering/Renderer.js";
+import { setServerDelta } from "./delta.js";
 
 console.debug('Connecting to', import.meta.env.VITE_WEBSOCKET_URL)
 const ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
@@ -31,6 +32,8 @@ const resize = () => {
         scale = window.innerWidth / 800;
     }
     app.stage.scale.x = app.stage.scale.y = scale;
+    app.stage.x = app.renderer.width / 2;
+    app.stage.y = app.renderer.height / 2;
     app.renderer.resize(gameCanvas.width, gameCanvas.height);
 }
 
@@ -42,17 +45,8 @@ document.addEventListener('pointermove', onPointerMove);
 document.addEventListener('mousedown', onMouseDown);
 document.addEventListener('mouseup', onMouseUp);
 
-const layers: Layers = {
-    default: new Container(),
-    foreground: new Container(),
-    ui: new Container()
-}
-
-app.stage.addChild(layers.default, layers.foreground, layers.ui);
-
-let serverDelta: number | undefined = undefined;
+const renderer = new Renderer(app)
 let myId: number | undefined = undefined;
-let gameUpdate: GameUpdate | undefined = undefined;
 
 ws.addEventListener("message", ({ data }) => {
     const buffer = Buffer.from(data);
@@ -60,16 +54,17 @@ ws.addEventListener("message", ({ data }) => {
     switch (topic) {
         case (ServerTopic.Tickrate):
             const message = tickrateType.fromBuffer(buffer);
-            serverDelta = 1000 / message.tickrate;
+            setServerDelta(1000 / message.tickrate);
             break;
         case (ServerTopic.SetNicknameResponse):
             const nicknameResponse = setNicknameResponseType.fromBuffer(buffer);
             if (nicknameResponse.success) {
                 myId = nicknameResponse.id;
+                renderer.myId = myId;
             }
             break;
         case (ServerTopic.GameUpdate):
-            gameUpdate = gameUpdateType.fromBuffer(buffer);
+            renderer.serverUpdate(gameUpdateType.fromBuffer(buffer));
             if (myId) {
                 ws.send(inputType.toBuffer(getInput()));
             }
@@ -86,10 +81,9 @@ nameForm.onsubmit = (e) => {
         nickname: nameForm.nickname.value
     };
     ws.send(setNicknameType.toBuffer(clientMessage));
+    nameForm.parentElement!.style.visibility = 'hidden';
 }
 
-setInterval(() => console.log(gameUpdate), 2000);
-
-// app.ticker.add((_delta) => {
-//     TODO interpolate
-// });
+app.ticker.add((_delta) => {
+    renderer.update();
+});

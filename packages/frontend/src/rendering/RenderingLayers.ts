@@ -1,7 +1,7 @@
 import { Container } from "pixi.js"
 
 export interface Layers {
-    default: Container;
+    background: Container;
     foreground: Container;
     ui: Container;
 }

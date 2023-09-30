@@ -24,8 +24,9 @@ export function onPointerMove(e: PointerEvent) {
     // Mouse inputs will be processed as if it was an analog controller stick.
 
     // Get distance to center of the screen
+    // All coordinates on this app are inverted on the Y axis
     let mouseDistanceX = e.pageX - window.innerWidth / 2;
-    let mouseDistanceY = window.innerHeight / 2 - e.pageY; // Invert Y axis
+    let mouseDistanceY = e.pageY - window.innerHeight / 2;
 
     // Get the raduis of the largest circle that can be inscribed on the screen
     let maxDistance = Math.min(window.innerWidth, window.innerHeight) / 2
