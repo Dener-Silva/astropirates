@@ -1,16 +1,16 @@
 import avro from "avro-js";
-import { ServerTopic, SetNameResponse, setNameResponseType } from "../src/ServerMessage.js";
+import { ServerTopic, SetNicknameResponse, setNicknameResponseType } from "../src/ServerMessage.js";
 
-test('Compare before and after serialization (SetNameResponse)', () => {
-    const message: SetNameResponse = {
-        topic: ServerTopic.SetNameResponse,
+test('Compare before and after serialization (SetNicknameResponse)', () => {
+    const message: SetNicknameResponse = {
+        topic: ServerTopic.SetNicknameResponse,
         id: 0,
         nickname: "Technocat",
         success: true
     }
 
-    const buf = setNameResponseType.toBuffer(message);
-    const result = setNameResponseType.fromBuffer(buf);
+    const buf = setNicknameResponseType.toBuffer(message);
+    const result = setNicknameResponseType.fromBuffer(buf);
 
     expect(result).toEqual(message);
 });

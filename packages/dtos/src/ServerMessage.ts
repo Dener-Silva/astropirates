@@ -1,20 +1,20 @@
 import avro from 'avro-js';
 
 export enum ServerTopic {
-    "SetNameResponse",
+    "SetNicknameResponse",
     "UpdateGameState"
 }
 
-export type SetNameResponse = {
-    topic: ServerTopic.SetNameResponse
+export type SetNicknameResponse = {
+    topic: ServerTopic.SetNicknameResponse
     id: number
     nickname: string
     success: boolean
 }
 
-export const setNameResponseType = avro.parse<SetNameResponse>({
+export const setNicknameResponseType = avro.parse<SetNicknameResponse>({
     type: "record",
-    name: "SetNameResponse",
+    name: "SetNicknameResponse",
     fields: [
         { name: "topic", type: "int" },
         { name: "id", type: "int" },

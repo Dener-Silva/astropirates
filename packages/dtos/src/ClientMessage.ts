@@ -6,23 +6,37 @@ export type ClientMessage = {
 }
 
 export enum ClientTopic {
-    "SetName",
+    "SetNickname",
     "Input"
 }
 
-export type SetName = {
-    topic: ClientTopic.SetName
+export type SetNickname = {
+    topic: ClientTopic.SetNickname
     nickname: string
 }
 
-export const setNameType = avro.parse<SetName>({
+class Maxlength15 extends avro.types.LogicalType<string> {
+    constructor(attrs: any, opts?: any, Types?: any[]) {
+        super(attrs, opts, Types);
+    }
+
+    _toValue(value: string) {
+        return value.substring(0, 15);
+    }
+
+    _fromValue(value: string) {
+        return value.substring(0, 15);
+    }
+}
+
+export const setNicknameType = avro.parse<SetNickname>({
     type: "record",
-    name: "SetName",
+    name: "SetNickname",
     fields: [
         { name: "topic", type: "int" },
-        { name: "nickname", type: "string" },
+        { name: "nickname", type: { type: "string", logicalType: 'maxlength-15' } },
     ]
-});
+}, { logicalTypes: { 'maxlength-15': Maxlength15 } });
 
 export type Input = {
     topic: ClientTopic.Input
@@ -31,13 +45,27 @@ export type Input = {
     shoot: boolean
 }
 
+class Clamp0To1 extends avro.types.LogicalType<number> {
+    constructor(attrs: any, opts?: any, Types?: any[]) {
+        super(attrs, opts, Types);
+    }
+
+    _toValue(value: number) {
+        return value;
+    }
+
+    _fromValue(value: number) {
+        return Math.min(1, Math.max(0, value));
+    }
+}
+
 export const inputType = avro.parse<Input>({
     type: "record",
     name: "Input",
     fields: [
         { name: "topic", type: "int" },
         { name: "angle", type: "double" },
-        { name: "magnitude", type: "double" },
+        { name: "magnitude", type: { type: "double", logicalType: 'clamp-0-to-1' } },
         { name: "shoot", type: "boolean" },
     ]
-});
+}, { logicalTypes: { 'clamp-0-to-1': Clamp0To1 } });

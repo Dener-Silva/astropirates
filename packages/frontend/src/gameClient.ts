@@ -1,7 +1,7 @@
 import { Application, Container } from "pixi.js";
 import { Layers } from "./RenderingLayers.js";
 import { onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.js";
-import { ClientTopic, SetName, setNameResponseType, setNameType } from "dtos";
+import { ClientTopic, SetNickname, setNicknameResponseType, setNicknameType } from "dtos";
 import { Buffer } from "buffer";
 
 const ws = new WebSocket('ws://localhost:5000');
@@ -52,18 +52,18 @@ app.stage.addChild(layers.default, layers.foreground, layers.ui);
 
 
 ws.addEventListener("message", ({ data }) => {
-    console.log(setNameResponseType.fromBuffer(Buffer.from(data)))
+    console.log(setNicknameResponseType.fromBuffer(Buffer.from(data)))
 });
 
 // "Choose Your Name" Form
 const nameForm = document.getElementById("name-form") as HTMLFormElement;
 nameForm.onsubmit = (e) => {
     e.preventDefault();
-    const clientMessage: SetName = {
-        topic: ClientTopic.SetName,
+    const clientMessage: SetNickname = {
+        topic: ClientTopic.SetNickname,
         nickname: nameForm.nickname.value
     };
-    ws.send(setNameType.toBuffer(clientMessage));
+    ws.send(setNicknameType.toBuffer(clientMessage));
 }
 
 // app.ticker.add((_delta) => {

@@ -8,4 +8,12 @@ declare module "avro-js" {
         createResolver: (type: Type) => any
         random: () => T
     }
+
+    export namespace types {
+        export class LogicalType<T> {
+            constructor(attrs: any, opts?: any, Types?: any[])
+            _toValue(value: T): T
+            _fromValue(value: T): T
+        }
+    }
 }

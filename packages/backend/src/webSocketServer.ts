@@ -1,4 +1,4 @@
-import { ClientTopic, NeverError, inputType, setNameType, setNameResponseType, SetNameResponse, ServerTopic, topicType } from "dtos";
+import { ClientTopic, NeverError, inputType, setNicknameType, setNicknameResponseType, SetNicknameResponse, ServerTopic, topicType } from "dtos";
 import { WebSocketServer } from "ws";
 import { createGameServer } from "./GameServer.js";
 
@@ -16,17 +16,17 @@ export function runWebSocketServer(wss: WebSocketServer) {
             try {
                 const topic: ClientTopic = topicType.fromBuffer(data, undefined, true);
                 switch (topic) {
-                    case ClientTopic.SetName:
-                        const message = setNameType.fromBuffer(data);
+                    case ClientTopic.SetNickname:
+                        const message = setNicknameType.fromBuffer(data);
                         const success = gameServer.addPlayer(id, message.nickname);
-                        const response: SetNameResponse = {
-                            topic: ServerTopic.SetNameResponse,
+                        const response: SetNicknameResponse = {
+                            topic: ServerTopic.SetNicknameResponse,
                             id,
                             nickname: message.nickname,
                             success
                         }
-                        console.log(setNameResponseType.toBuffer(response))
-                        ws.send(setNameResponseType.toBuffer(response))
+                        console.log(setNicknameResponseType.toBuffer(response))
+                        ws.send(setNicknameResponseType.toBuffer(response))
                         break;
                     case ClientTopic.Input:
                         gameServer.registerInputs(id, inputType.fromBuffer(data));
