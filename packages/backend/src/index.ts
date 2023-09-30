@@ -1,23 +1,25 @@
 import cors from 'cors';
 import express from 'express';
 import http from 'http';
-import { WebSocketServer } from 'ws';
+import { AddressInfo, WebSocketServer } from 'ws';
 import { runWebSocketServer } from './webSocketServer.js';
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ path: `.env.${process.env.NODE_ENV || 'prod'}` })
+console.log(process.env.NODE_ENV)
 
 const app = express()
-const port = process.env.PORT
+const port = Number(process.env.PORT);
 const server = http.createServer(app);
 
-app.use(cors({ origin: 'http://localhost:3000' }))
+app.use(cors({ origin: process.env.CORS_ORIGIN }))
 
-app.get('/hello', (_, response) => {
+app.get('/', (_, response) => {
     response.json({ hello: "world" })
 })
 
 runWebSocketServer(new WebSocketServer({ server }));
 
 server.listen(port, () => {
-    console.log(`Listening on port ${port}`);
+    const address = server.address() as AddressInfo;
+    console.log(`Listening on port ${address.port}`);
 });

@@ -4,7 +4,8 @@ import { getInput, onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.j
 import { ClientTopic, GameUpdate, ServerTopic, SetNickname, gameUpdateType, inputType, setNicknameResponseType, setNicknameType, tickrateType, topicType } from "dtos";
 import { Buffer } from "buffer";
 
-const ws = new WebSocket('ws://localhost:5000');
+console.debug('Connecting to', import.meta.env.VITE_WEBSOCKET_URL)
+const ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
 ws.binaryType = 'arraybuffer';
 ws.addEventListener("error", console.error);
 const gameCanvas = document.getElementById("game-canvas") as HTMLCanvasElement;

@@ -38,16 +38,16 @@ export const gameUpdateType = avro.parse<GameUpdate>({
     fields: [
         { name: "topic", type: "int" },
         {
-            name: "positions", "type": {
-                "type": "array",
-                "items": {
-                    "name": "position",
-                    "type": "record",
-                    "fields": [
-                        { "name": "id", "type": "long" },
-                        { "name": "x", "type": "double" },
-                        { "name": "y", "type": "double" },
-                        { "name": "rotation", "type": "double" }
+            name: "positions", type: {
+                type: "array",
+                items: {
+                    name: "position",
+                    type: "record",
+                    fields: [
+                        { name: "id", type: "long" },
+                        { name: "x", type: "double" },
+                        { name: "y", type: "double" },
+                        { name: "rotation", type: "double" }
                     ]
                 }
             }
@@ -67,7 +67,7 @@ export const setNicknameResponseType = avro.parse<SetNicknameResponse>({
     name: "SetNicknameResponse",
     fields: [
         { name: "topic", type: "int" },
-        { name: "id", type: "int" },
+        { name: "id", type: "long" },
         { name: "nickname", type: "string" },
         { name: "success", type: "boolean" }
     ]
