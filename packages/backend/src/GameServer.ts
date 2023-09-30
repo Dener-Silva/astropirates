@@ -10,12 +10,14 @@ export class GameServer {
         if (this.takenNames.has(nickname)) {
             return false;
         }
+        console.debug(`Welcome ${nickname} (ID ${id})`)
         this.players.set(id, new Player(nickname));
         this.takenNames.add(nickname);
         return true;
     }
 
     removePlayer(id: number) {
+        console.debug(`Bye ${this.players.get(id)?.nickname} (ID ${id})`)
         const player = this.players.get(id)
         if (player) {
             this.takenNames.delete(player.nickname)

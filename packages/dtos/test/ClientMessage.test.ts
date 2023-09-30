@@ -24,6 +24,18 @@ test('Should limit name to 15 characters (SetNickname)', () => {
     expect(result.nickname).toHaveLength(15);
 });
 
+test('Should trim nickname (SetNickname)', () => {
+    const input: SetNickname = {
+        topic: ClientTopic.SetNickname,
+        nickname: " spaces around "
+    }
+
+    const buffer = setNicknameType.toBuffer(input);
+    const result = setNicknameType.fromBuffer(buffer);
+
+    expect(result.nickname).toEqual(input.nickname.trim());
+});
+
 test('Compare before and after serialization (Input)', () => {
     const input: Input = {
         topic: ClientTopic.Input,

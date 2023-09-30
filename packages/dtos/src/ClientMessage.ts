@@ -25,7 +25,7 @@ class Maxlength15 extends avro.types.LogicalType<string> {
     }
 
     _fromValue(value: string) {
-        return value.substring(0, 15);
+        return value.substring(0, 15).trim();
     }
 }
 

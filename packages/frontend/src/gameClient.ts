@@ -4,10 +4,6 @@ import { getInput, onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.j
 import { ClientTopic, GameUpdate, ServerTopic, SetNickname, gameUpdateType, inputType, setNicknameResponseType, setNicknameType, tickrateType, topicType } from "dtos";
 import { Buffer } from "buffer";
 
-declare global {
-    export let tickrate: number;
-}
-
 const ws = new WebSocket('ws://localhost:5000');
 ws.binaryType = 'arraybuffer';
 ws.addEventListener("error", console.error);
@@ -53,6 +49,7 @@ const layers: Layers = {
 
 app.stage.addChild(layers.default, layers.foreground, layers.ui);
 
+let serverDelta: number | undefined = undefined;
 let myId: number | undefined = undefined;
 let gameUpdate: GameUpdate | undefined = undefined;
 
@@ -62,12 +59,10 @@ ws.addEventListener("message", ({ data }) => {
     switch (topic) {
         case (ServerTopic.Tickrate):
             const message = tickrateType.fromBuffer(buffer);
-            tickrate = 1000 / message.tickrate;
-            console.log(tickrate);
+            serverDelta = 1000 / message.tickrate;
             break;
         case (ServerTopic.SetNicknameResponse):
             const nicknameResponse = setNicknameResponseType.fromBuffer(buffer);
-            console.log(nicknameResponse);
             if (nicknameResponse.success) {
                 myId = nicknameResponse.id;
             }
@@ -92,7 +87,7 @@ nameForm.onsubmit = (e) => {
     ws.send(setNicknameType.toBuffer(clientMessage));
 }
 
-setInterval(() => console.log(gameUpdate), 1000);
+setInterval(() => console.log(gameUpdate), 2000);
 
 // app.ticker.add((_delta) => {
 //     TODO interpolate

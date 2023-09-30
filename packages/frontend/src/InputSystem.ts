@@ -7,7 +7,16 @@ const input: Input = {
     shoot: false
 };
 
+let didShoot = false;
+
 export function getInput(): Input {
+    if (didShoot) {
+        didShoot = false;
+        return {
+            ...input,
+            shoot: true
+        };
+    }
     return input;
 }
 
@@ -30,6 +39,7 @@ export function onPointerMove(e: PointerEvent) {
 }
 
 export function onMouseDown() {
+    didShoot = true;
     input.shoot = true;
 }
 

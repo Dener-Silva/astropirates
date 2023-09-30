@@ -35,3 +35,11 @@ test('Should detect quick press', () => {
     expect(getInput().shoot).toBeTruthy();
     expect(getInput().shoot).toBeFalsy();
 });
+
+test('Should keep shooting when holding the button down', () => {
+    onPointerMove({ pageX: 0, pageY: 1 } as PointerEvent);
+    onMouseDown();
+
+    expect(getInput().shoot).toBeTruthy();
+    expect(getInput().shoot).toBeTruthy();
+});

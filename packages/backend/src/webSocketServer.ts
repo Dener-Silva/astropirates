@@ -1,7 +1,7 @@
-import { ClientTopic, NeverError, inputType, setNicknameType, setNicknameResponseType, SetNicknameResponse, ServerTopic, topicType, gameUpdateType } from "dtos";
+import { ClientTopic, NeverError, inputType, setNicknameType, setNicknameResponseType, SetNicknameResponse, ServerTopic, topicType, gameUpdateType, tickrateType } from "dtos";
 import { WebSocketServer } from "ws";
 import { GameServer } from "./GameServer.js";
-import { delta } from './delta.js';
+import { delta, tickrate } from './delta.js';
 
 export function runWebSocketServer(wss: WebSocketServer) {
 
@@ -9,6 +9,7 @@ export function runWebSocketServer(wss: WebSocketServer) {
     let currentId = 0;
 
     wss.on('connection', (ws) => {
+        ws.send(tickrateType.toBuffer({ topic: ServerTopic.Tickrate, tickrate }))
         const id = currentId++;
 
         ws.on('error', console.error);
@@ -44,10 +45,13 @@ export function runWebSocketServer(wss: WebSocketServer) {
         });
     });
 
-    setInterval(() => {
-        const state = gameServer.update();
-        for (const ws of wss.clients) {
-            ws.send(gameUpdateType.toBuffer(state));
-        }
-    }, delta)
+    // Using setImmediate so the tickrate can be read from the dotenv file.
+    setImmediate(() =>
+        setInterval(() => {
+            const state = gameServer.update();
+            for (const ws of wss.clients) {
+                ws.send(gameUpdateType.toBuffer(state));
+            }
+        }, delta)
+    )
 }
