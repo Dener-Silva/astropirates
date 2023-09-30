@@ -1,10 +1,11 @@
-import { ClientTopic, NeverError, inputType, setNicknameType, setNicknameResponseType, SetNicknameResponse, ServerTopic, topicType } from "dtos";
+import { ClientTopic, NeverError, inputType, setNicknameType, setNicknameResponseType, SetNicknameResponse, ServerTopic, topicType, gameUpdateType } from "dtos";
 import { WebSocketServer } from "ws";
-import { createGameServer } from "./GameServer.js";
+import { GameServer } from "./GameServer.js";
+import { delta } from './delta.js';
 
 export function runWebSocketServer(wss: WebSocketServer) {
 
-    const gameServer = createGameServer();
+    const gameServer = new GameServer();
     let currentId = 0;
 
     wss.on('connection', (ws) => {
@@ -25,7 +26,6 @@ export function runWebSocketServer(wss: WebSocketServer) {
                             nickname: message.nickname,
                             success
                         }
-                        console.log(setNicknameResponseType.toBuffer(response))
                         ws.send(setNicknameResponseType.toBuffer(response))
                         break;
                     case ClientTopic.Input:
@@ -45,8 +45,9 @@ export function runWebSocketServer(wss: WebSocketServer) {
     });
 
     setInterval(() => {
+        const state = gameServer.update();
         for (const ws of wss.clients) {
-            // TODO
+            ws.send(gameUpdateType.toBuffer(state));
         }
-    }, 50)
+    }, delta)
 }

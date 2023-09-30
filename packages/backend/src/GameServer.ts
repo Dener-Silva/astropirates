@@ -1,38 +1,45 @@
-import { Input } from 'dtos';
+import { GameUpdate, Input, ServerTopic } from 'dtos';
 import { Player } from './Player.js';
 
-export function createGameServer() {
-    const players = new Map<number, Player>();
-    const inputs = new Map<number, Input>();
-    const takenNames = new Set<string>();
+export class GameServer {
+    players = new Map<number, Player>();
+    inputs = new Map<number, Input>();
+    takenNames = new Set<string>();
 
-    function addPlayer(id: number, nickname: string): boolean {
-        console.log("addPlayer", id, nickname);
-        if (takenNames.has(nickname)) {
+    addPlayer(id: number, nickname: string): boolean {
+        if (this.takenNames.has(nickname)) {
             return false;
         }
-        players.set(id, new Player(nickname));
-        takenNames.add(nickname);
+        this.players.set(id, new Player(nickname));
+        this.takenNames.add(nickname);
         return true;
     }
 
-    function removePlayer(id: number) {
-        console.log("removePlayer", id);
-        const player = players.get(id)
+    removePlayer(id: number) {
+        const player = this.players.get(id)
         if (player) {
-            takenNames.delete(player.nickname)
-            players.delete(id);
+            this.takenNames.delete(player.nickname)
         }
+        this.players.delete(id);
+        this.inputs.delete(id);
     }
 
-    function registerInputs(id: number, input: Input) {
-        console.log("registerInputs", id, input);
-        inputs.set(id, input);
+    registerInputs(id: number, input: Input) {
+        this.inputs.set(id, input);
     }
 
-    return {
-        addPlayer,
-        removePlayer,
-        registerInputs
+    update(): GameUpdate {
+        for (const [id, input] of this.inputs) {
+            const player = this.players.get(id)!;
+            player.move(input);
+        }
+        const state: GameUpdate = {
+            topic: ServerTopic.GameUpdate,
+            positions: []
+        }
+        for (const [id, { x, y, rotation }] of this.players) {
+            state.positions.push({ id, x, y, rotation });
+        }
+        return state;
     }
 }

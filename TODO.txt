@@ -41,8 +41,8 @@
 		- Bullet
 		- Asteroids belt?
 	- Input
-        - Input to console.log - next
-		- Move
+        - Input to console.log - OK
+		- Move - buggy
 		- Shoot
 	- Networking
 		- Store user input queue - OK
@@ -67,9 +67,3 @@
         - High score screen
             - Layout
             - Fetch from database
-
-
-// // Workaround for Node ArrayBuffer type missing resize method (it is supported since Node 20)
-// type ResizableArrayBuffer = {
-//     resize: (bytes: number) => void
-// } & ArrayBuffer;

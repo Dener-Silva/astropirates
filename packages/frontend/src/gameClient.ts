@@ -1,8 +1,12 @@
 import { Application, Container } from "pixi.js";
 import { Layers } from "./RenderingLayers.js";
-import { onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.js";
-import { ClientTopic, SetNickname, setNicknameResponseType, setNicknameType } from "dtos";
+import { getInput, onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.js";
+import { ClientTopic, GameUpdate, ServerTopic, SetNickname, gameUpdateType, inputType, setNicknameResponseType, setNicknameType, tickrateType, topicType } from "dtos";
 import { Buffer } from "buffer";
+
+declare global {
+    export let tickrate: number;
+}
 
 const ws = new WebSocket('ws://localhost:5000');
 ws.binaryType = 'arraybuffer';
@@ -49,10 +53,32 @@ const layers: Layers = {
 
 app.stage.addChild(layers.default, layers.foreground, layers.ui);
 
-
+let myId: number | undefined = undefined;
+let gameUpdate: GameUpdate | undefined = undefined;
 
 ws.addEventListener("message", ({ data }) => {
-    console.log(setNicknameResponseType.fromBuffer(Buffer.from(data)))
+    const buffer = Buffer.from(data);
+    const topic: ServerTopic = topicType.fromBuffer(buffer, undefined, true);
+    switch (topic) {
+        case (ServerTopic.Tickrate):
+            const message = tickrateType.fromBuffer(buffer);
+            tickrate = 1000 / message.tickrate;
+            console.log(tickrate);
+            break;
+        case (ServerTopic.SetNicknameResponse):
+            const nicknameResponse = setNicknameResponseType.fromBuffer(buffer);
+            console.log(nicknameResponse);
+            if (nicknameResponse.success) {
+                myId = nicknameResponse.id;
+            }
+            break;
+        case (ServerTopic.GameUpdate):
+            gameUpdate = gameUpdateType.fromBuffer(buffer);
+            if (myId) {
+                ws.send(inputType.toBuffer(getInput()));
+            }
+            break;
+    }
 });
 
 // "Choose Your Name" Form
@@ -66,6 +92,8 @@ nameForm.onsubmit = (e) => {
     ws.send(setNicknameType.toBuffer(clientMessage));
 }
 
+setInterval(() => console.log(gameUpdate), 1000);
+
 // app.ticker.add((_delta) => {
-//     let m = takeAllFromInputQueue();
+//     TODO interpolate
 // });

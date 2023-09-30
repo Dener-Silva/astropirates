@@ -1,7 +1,7 @@
-import { createGameServer } from "../src/GameServer.js";
+import { GameServer } from "../src/GameServer.js";
 
 test('Should nor add two players with the same name, and return false', () => {
-    const gameServer = createGameServer();
+    const gameServer = new GameServer();
 
     gameServer.addPlayer(0, 'Technocat');
     const result = gameServer.addPlayer(1, 'Technocat');
@@ -10,7 +10,7 @@ test('Should nor add two players with the same name, and return false', () => {
 });
 
 test('Should free the name for use', () => {
-    const gameServer = createGameServer();
+    const gameServer = new GameServer();
 
     gameServer.addPlayer(0, 'Technocat');
     gameServer.removePlayer(0);
