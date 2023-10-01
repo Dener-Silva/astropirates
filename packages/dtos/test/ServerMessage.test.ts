@@ -15,10 +15,10 @@ test('Compare before and after serialization (Tickrate)', () => {
 test('Compare before and after serialization (GameUpdate)', () => {
     const message: GameUpdate = {
         topic: ServerTopic.GameUpdate,
-        positions: [
-            { id: 0, x: 12.3, y: 23.4, rotation: Math.PI },
-            { id: 1, x: 34.5, y: 56.7, rotation: -Math.PI }
-        ]
+        players: {
+            0: { x: 12.3, y: 23.4, rotation: Math.PI },
+            1: { x: 34.5, y: 56.7, rotation: -Math.PI },
+        }
     }
 
     const buf = gameUpdateType.toBuffer(message);

@@ -36,10 +36,11 @@
 	- Performance information screen
 - Front end
 	- Render (basic)
-		- Stars
+		- Stars - OK
 		- Ship - OK
 		- Bullet
 		- Asteroids belt?
+		- CRT shader?
 	- Input
         - Input to console.log - OK
 		- Move - OK
@@ -48,6 +49,7 @@
 		- Store user input queue - OK
 		- Send user input - OK
 		- Debounce input - OK
+		- Send user names
 		- Receive and store frame data / Deserialization
             - Object pool?
 			- Create

@@ -1,5 +1,5 @@
 import { Application, Container, Graphics, Text } from "pixi.js";
-import { GameUpdate, angleLerp, lerp } from "dtos";
+import { Dictionary, GameUpdate, Player, angleLerp, lerp } from "dtos";
 import { serverDelta } from "../delta.js";
 import { ShipGraphics } from "./ShipGraphics.js";
 import { Stars } from "./Stars.js";
@@ -14,11 +14,10 @@ interface Layers {
 export class Renderer {
 
     layers: Layers;
-    myId: number | undefined = undefined;
-    playerGraphics = new Map<number, ShipGraphics>();
-    // Start with empty positions until the first update from server
-    positions: { x: number, y: number, rotation: number, id: number }[] = [];
-    previousPositions: { x: number, y: number, rotation: number, id: number }[] = [];
+    myId: string | undefined = undefined;
+    playerGraphics: Dictionary<ShipGraphics> = {};
+    players: Dictionary<Player> = {};
+    previousPlayers: Dictionary<Player> = {};
     lastServerUpdate = performance.now();
     stars: Stars;
 
@@ -40,28 +39,27 @@ export class Renderer {
         let timeSinceNextTick = Math.min(performance.now() - this.lastServerUpdate, 2 * serverDelta);
         let interpolationFactor = timeSinceNextTick / serverDelta;
 
-        for (let i = 0; i < this.positions.length; i++) {
-            const position = this.positions[i]
-            const previousPosition = this.previousPositions[i];
-            let ship = this.playerGraphics.get(position.id);
+        for (const [id, player] of Object.entries(this.players)) {
+            const previousPosition = this.previousPlayers[id];
+            let ship = this.playerGraphics[id];
             if (ship && previousPosition) {
-                ship.x = lerp(previousPosition.x, position.x, interpolationFactor);
-                ship.y = lerp(previousPosition.y, position.y, interpolationFactor);
-                ship.graphics.rotation = angleLerp(previousPosition.rotation, position.rotation, interpolationFactor);
+                ship.x = lerp(previousPosition.x, player.x, interpolationFactor);
+                ship.y = lerp(previousPosition.y, player.y, interpolationFactor);
+                ship.graphics.rotation = angleLerp(previousPosition.rotation, player.rotation, interpolationFactor);
             }
             if (!ship) {
                 // The player has their own layer, so they can't be drawn behind other players
-                const layer = position.id === this.myId ? this.layers.player : this.layers.foreground;
+                const layer = id === this.myId ? this.layers.player : this.layers.foreground;
                 ship = new ShipGraphics('Test', layer);
-                ship.x = position.x;
-                ship.y = position.y;
-                ship.graphics.rotation = position.rotation;
-                this.playerGraphics.set(position.id, ship);
+                ship.x = player.x;
+                ship.y = player.y;
+                ship.graphics.rotation = player.rotation;
+                this.playerGraphics[id] = ship;
             }
 
             // Move camera to follow the player.
             // Do note that we follow the visual position, not the actual one.
-            if (position.id === this.myId) {
+            if (id === this.myId) {
                 this.app.stage.pivot.x = ship.x;
                 this.app.stage.pivot.y = ship.y;
                 this.stars.update(ship.x, ship.y);
@@ -71,7 +69,7 @@ export class Renderer {
 
     serverUpdate(gameUpdate: GameUpdate) {
         this.lastServerUpdate = performance.now();
-        this.previousPositions = this.positions;
-        this.positions = gameUpdate.positions;
+        this.previousPlayers = this.players;
+        this.players = gameUpdate.players;
     }
 }

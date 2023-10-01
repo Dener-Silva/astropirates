@@ -46,7 +46,7 @@ document.addEventListener('mousedown', onMouseDown);
 document.addEventListener('mouseup', onMouseUp);
 
 const renderer = new Renderer(app)
-let myId: number | undefined = undefined;
+let myId: string | undefined = undefined;
 
 ws.addEventListener("message", ({ data }) => {
     const buffer = Buffer.from(data);
@@ -59,7 +59,7 @@ ws.addEventListener("message", ({ data }) => {
         case (ServerTopic.SetNicknameResponse):
             const nicknameResponse = setNicknameResponseType.fromBuffer(buffer);
             if (nicknameResponse.success) {
-                myId = nicknameResponse.id;
+                myId = String(nicknameResponse.id);
                 renderer.myId = myId;
             }
             break;

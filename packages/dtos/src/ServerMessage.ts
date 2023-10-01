@@ -20,16 +20,11 @@ export const tickrateType = avro.parse<Tickrate>({
     ]
 });
 
+export type Player = { x: number, y: number, rotation: number }
+export type Dictionary<T> = { [id: string]: T }
 export type GameUpdate = {
     topic: ServerTopic.GameUpdate
-    positions:
-    {
-        id: number
-        x: number
-        y: number
-        rotation: number
-    }[]
-
+    players: Dictionary<Player>
 }
 
 export const gameUpdateType = avro.parse<GameUpdate>({
@@ -38,13 +33,12 @@ export const gameUpdateType = avro.parse<GameUpdate>({
     fields: [
         { name: "topic", type: "int" },
         {
-            name: "positions", type: {
-                type: "array",
-                items: {
-                    name: "position",
+            name: "players", type: {
+                type: "map",
+                values: {
+                    name: "Player",
                     type: "record",
                     fields: [
-                        { name: "id", type: "long" },
                         { name: "x", type: "double" },
                         { name: "y", type: "double" },
                         { name: "rotation", type: "double" }
