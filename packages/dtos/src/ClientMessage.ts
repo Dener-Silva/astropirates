@@ -64,8 +64,8 @@ export const inputType = avro.parse<Input>({
     name: "Input",
     fields: [
         { name: "topic", type: "int" },
-        { name: "angle", type: "double" },
-        { name: "magnitude", type: { type: "double", logicalType: 'clamp-0-to-1' } },
+        { name: "angle", type: "float" },
+        { name: "magnitude", type: { type: "float", logicalType: 'clamp-0-to-1' } },
         { name: "shoot", type: "boolean" },
     ]
 }, { logicalTypes: { 'clamp-0-to-1': Clamp0To1 } });

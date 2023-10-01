@@ -59,7 +59,7 @@ ws.addEventListener("message", ({ data }) => {
         case (ServerTopic.SetNicknameResponse):
             const nicknameResponse = setNicknameResponseType.fromBuffer(buffer);
             if (nicknameResponse.success) {
-                myId = String(nicknameResponse.id);
+                myId = nicknameResponse.id;
                 renderer.myId = myId;
             }
             break;

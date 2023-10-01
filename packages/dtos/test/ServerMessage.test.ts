@@ -1,4 +1,6 @@
 import { GameUpdate, ServerTopic, SetNicknameResponse, Tickrate, gameUpdateType, setNicknameResponseType, tickrateType } from "../src/ServerMessage.js";
+import { toBeDeepCloseTo } from 'jest-matcher-deep-close-to';
+expect.extend({ toBeDeepCloseTo });
 
 test('Compare before and after serialization (Tickrate)', () => {
     const message: Tickrate = {
@@ -24,13 +26,13 @@ test('Compare before and after serialization (GameUpdate)', () => {
     const buf = gameUpdateType.toBuffer(message);
     const result = gameUpdateType.fromBuffer(buf);
 
-    expect(result).toEqual(message);
+    expect(result).toBeDeepCloseTo(message);
 });
 
 test('Compare before and after serialization (SetNicknameResponse)', () => {
     const message: SetNicknameResponse = {
         topic: ServerTopic.SetNicknameResponse,
-        id: 0,
+        id: '0',
         nickname: "Technocat",
         success: true
     }

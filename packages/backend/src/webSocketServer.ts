@@ -3,6 +3,23 @@ import { WebSocketServer } from "ws";
 import { GameServer } from "./GameServer.js";
 import { delta, tickrate } from './delta.js';
 
+function encodeBase94(number: number) {
+    const base94Chars = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+
+    if (number === 0) {
+        return '!';
+    }
+
+    let encoded = "";
+    while (number > 0) {
+        const remainder = number % 94;
+        encoded = base94Chars[remainder] + encoded;
+        number = Math.floor(number / 94);
+    }
+
+    return encoded;
+}
+
 export function runWebSocketServer(wss: WebSocketServer) {
 
     const gameServer = new GameServer();
@@ -10,7 +27,7 @@ export function runWebSocketServer(wss: WebSocketServer) {
 
     wss.on('connection', (ws) => {
         ws.send(tickrateType.toBuffer({ topic: ServerTopic.Tickrate, tickrate }))
-        const id = currentId++;
+        const id = encodeBase94(currentId++);
 
         ws.on('error', console.error);
 

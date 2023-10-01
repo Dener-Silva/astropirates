@@ -39,9 +39,9 @@ export const gameUpdateType = avro.parse<GameUpdate>({
                     name: "Player",
                     type: "record",
                     fields: [
-                        { name: "x", type: "double" },
-                        { name: "y", type: "double" },
-                        { name: "rotation", type: "double" }
+                        { name: "x", type: "float" },
+                        { name: "y", type: "float" },
+                        { name: "rotation", type: "float" }
                     ]
                 }
             }
@@ -51,7 +51,7 @@ export const gameUpdateType = avro.parse<GameUpdate>({
 
 export type SetNicknameResponse = {
     topic: ServerTopic.SetNicknameResponse
-    id: number
+    id: string
     nickname: string
     success: boolean
 }
@@ -61,7 +61,7 @@ export const setNicknameResponseType = avro.parse<SetNicknameResponse>({
     name: "SetNicknameResponse",
     fields: [
         { name: "topic", type: "int" },
-        { name: "id", type: "long" },
+        { name: "id", type: "string" },
         { name: "nickname", type: "string" },
         { name: "success", type: "boolean" }
     ]
