@@ -17,20 +17,27 @@
         canvas {
             background: radial-gradient(#222, #000);
             display: block;
-        }
-
-        #name-modal {
             position: fixed;
             top: 0;
             bottom: 0;
             right: 0;
             left: 0;
             margin: auto;
+            z-index: -1;
+        }
+
+        #name-modal {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             color: lightgray;
+            background: #0008;
+            padding: 15px 50px 50px;
+            border-radius: 40px;
+            box-shadow: 0px 0px 20px black;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
     </style>
 </head>
@@ -40,7 +47,7 @@
         <h1>Choose Your Name</h1>
         <form id="name-form" action="">
             <input type="text" name="nickname" maxlength="15" />
-            <input type="submit" />
+            <input type="submit" name="go" value="GO" disabled />
         </form>
     </div>
     <canvas id="game-canvas"></canvas>

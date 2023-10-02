@@ -91,6 +91,9 @@ ws.addEventListener("message", ({ data }) => {
 const nameForm = document.getElementById("name-form") as HTMLFormElement;
 nameForm.onsubmit = (e) => {
     e.preventDefault();
+    if (nameForm.nickname.value?.trim().length < 1) {
+        return;
+    }
     const clientMessage: SetNickname = {
         topic: ClientTopic.SetNickname,
         nickname: nameForm.nickname.value
@@ -98,6 +101,10 @@ nameForm.onsubmit = (e) => {
     ws.send(setNicknameType.toBuffer(clientMessage));
     nameForm.parentElement!.style.visibility = 'hidden';
 }
+const updateButton = () => {
+    nameForm.go.disabled = nameForm.nickname.value?.trim().length < 1;
+}
+nameForm.nickname.onchange = nameForm.nickname.onkeyup = updateButton;
 
 app.ticker.add((_delta) => {
     renderer.update();

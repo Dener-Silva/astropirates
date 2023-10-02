@@ -13,7 +13,7 @@
             - Positions and rotations - OK
             - Deaths
             - Warps
-            - Names
+            - Names - OK
             - Scoreboard
     		- Send only what the player can see?
 	- Main game loop
@@ -49,7 +49,7 @@
 		- Store user input queue - OK
 		- Send user input - OK
 		- Debounce input - OK
-		- Send user names
+		- Send user names - OK
 		- Receive and store frame data / Deserialization
             - Object pool?
 			- Create
@@ -59,7 +59,7 @@
 				- Players - OK
 				- Bullets
 			- Delete
-				- Players
+				- Players - OK
 				- Bullets
 	- Main game loop
 		- Move
@@ -68,9 +68,12 @@
 		- Implement Scoreboard
 		- Respawn invencibility animation
 	- Rendering loop
-		- interpolation
+		- interpolation - OK
 		- Update each renderer's position
+			- Players - OK
+			- Bullets
     - UI
+		- Install React?
         - Name choosing screen - OK
         - High score screen
             - Layout
