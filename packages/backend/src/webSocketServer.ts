@@ -2,6 +2,7 @@ import { ClientTopic, NeverError, inputType, setNicknameType, setNicknameRespons
 import { WebSocketServer } from "ws";
 import { GameServer } from "./GameServer.js";
 import { delta, tickrate } from './delta.js';
+import { SweepAndPrune } from "./collision/SweepAndPrune.js";
 
 function encodeBase94(number: number) {
     const base94Chars = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
@@ -22,7 +23,7 @@ function encodeBase94(number: number) {
 
 export function runWebSocketServer(wss: WebSocketServer) {
 
-    const gameServer = new GameServer();
+    const gameServer = new GameServer(new SweepAndPrune());
     let currentId = 0;
 
     wss.on('connection', (ws) => {

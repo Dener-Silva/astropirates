@@ -1,9 +1,11 @@
+import { Player } from "../../Player.js";
 import { pointVsPolygonSAT, polygonVsPolygonSAT } from "../SAT.js";
 import { Collider, AABB } from "./Collider.js";
 import { Point } from "./Point.js";
 
 export class Polygon implements Collider {
 
+    owner?: Player;
     enabled = true;
     private _x = 0;
     private _y = 0;

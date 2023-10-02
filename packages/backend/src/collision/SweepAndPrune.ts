@@ -38,9 +38,8 @@ export class SweepAndPrune {
         return potentials;
     }
 
-    add(colliders: Collider[]) {
-        for (const collider of colliders)
-            this.colliders.push(collider);
+    add(collider: Collider) {
+        this.colliders.push(collider);
     }
 
     remove(colliders: Collider[]) {

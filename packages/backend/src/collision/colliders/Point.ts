@@ -3,6 +3,7 @@ import { Collider, AABB } from "./Collider.js";
 import { Polygon } from "./Polygon.js";
 
 export class Point implements Collider {
+    owner?: any;
     enabled = true;
     x = 0;
     y = 0;

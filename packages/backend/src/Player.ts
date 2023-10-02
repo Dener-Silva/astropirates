@@ -1,11 +1,13 @@
 import { Input, rotateTowards } from "dtos"
 import { delta } from './delta.js';
+import { Polygon } from "./collision/colliders/Polygon.js";
+import { ObjectWithCollider } from "./collision/colliders/Collider.js";
 
 const maxRotationSpeed = 0.01;
 const dragCoefficient = 0.01;
 const maxForce = 0.002;
 
-export class Player {
+export class Player implements ObjectWithCollider {
 
     x: number
     y: number
@@ -13,15 +15,16 @@ export class Player {
     ySpeed = 0
     rotation = Math.PI / 2;
 
-    constructor(public nickname: string) {
-        // TODO random position
+    constructor(public nickname: string, public collider: Polygon) {
+        collider.owner = this;
+        // TODO random position. Do not forget to update collider
         this.x = this.y = 0
     }
 
     move(input: Input) {
         // Rotate
         // All coordinates on this app are inverted on the Y axis
-        this.rotation = rotateTowards(this.rotation, input.angle, maxRotationSpeed * delta);
+        this.collider.rotation = this.rotation = rotateTowards(this.rotation, input.angle, maxRotationSpeed * delta);
 
         // Calculate speed
         let xDrag = dragCoefficient * Math.abs(this.xSpeed) * this.xSpeed;
@@ -32,7 +35,14 @@ export class Player {
         this.ySpeed += (yForce - yDrag) * delta;
 
         // Move forward
-        this.x += this.xSpeed * delta;
-        this.y += this.ySpeed * delta;
+        this.collider.x = this.x += this.xSpeed * delta;
+        this.collider.y = this.y += this.ySpeed * delta;
+    }
+
+    onCollision(other: ObjectWithCollider): void {
+        if (other instanceof Player) {
+            return;
+        }
+        throw new Error(`Collided with object of unknown type: ${other.constructor.name}`);
     }
 }
