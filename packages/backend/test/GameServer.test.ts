@@ -2,7 +2,7 @@ import { GameServer } from "../src/GameServer.js";
 
 jest.mock('../src/delta.js', () => ({ delta: 50 }));
 
-test('Should nor add two players with the same name, and return false', () => {
+test('Should not add two players with the same name, and return false', () => {
     const gameServer = new GameServer();
 
     gameServer.addPlayer('0', 'Technocat');

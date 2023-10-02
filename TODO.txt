@@ -26,7 +26,8 @@
 			- Bullets
             - Limit (asteroid belt?)
 		- Shoot
-		- Warp
+		- Warp?
+		- Shield?
 		- Collide
 			- Player/bullet
 			- Player/limit
