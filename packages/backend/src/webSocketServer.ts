@@ -1,4 +1,4 @@
-import { ClientTopic, NeverError, inputType, setNicknameType, setNicknameResponseType, SetNicknameResponse, ServerTopic, topicType, gameUpdateType, tickrateType } from "dtos";
+import { ClientTopic, NeverError, inputType, setNicknameType, setNicknameResponseType, ServerTopic, topicType, gameUpdateType, welcomeType, newPlayerType, playerLoggedOutType } from "dtos";
 import { WebSocketServer } from "ws";
 import { GameServer } from "./GameServer.js";
 import { delta, tickrate } from './delta.js';
@@ -26,7 +26,9 @@ export function runWebSocketServer(wss: WebSocketServer) {
     let currentId = 0;
 
     wss.on('connection', (ws) => {
-        ws.send(tickrateType.toBuffer({ topic: ServerTopic.Tickrate, tickrate }))
+        ws.send(welcomeType.toBuffer({ topic: ServerTopic.Welcome, tickrate, players: gameServer.players }))
+        // Base94 strings use less bandwidth, but numeric strings might be a little faster
+        // Needs more testing to see if the tradeoff is worth it
         const id = encodeBase94(currentId++);
 
         ws.on('error', console.error);
@@ -37,14 +39,25 @@ export function runWebSocketServer(wss: WebSocketServer) {
                 switch (topic) {
                     case ClientTopic.SetNickname:
                         const message = setNicknameType.fromBuffer(data);
-                        const success = gameServer.addPlayer(id, message.nickname);
-                        const response: SetNicknameResponse = {
+                        // Try to add player to the server
+                        const player = gameServer.addPlayer(id, message.nickname);
+                        // Always respond with success or failure
+                        ws.send(setNicknameResponseType.toBuffer({
                             topic: ServerTopic.SetNicknameResponse,
                             id,
                             nickname: message.nickname,
-                            success
+                            success: Boolean(player)
+                        }))
+                        // If player was successfully added, broadcast
+                        if (player) {
+                            for (const ws of wss.clients) {
+                                ws.send(newPlayerType.toBuffer({
+                                    topic: ServerTopic.NewPlayer,
+                                    id,
+                                    player
+                                }));
+                            }
                         }
-                        ws.send(setNicknameResponseType.toBuffer(response))
                         break;
                     case ClientTopic.Input:
                         gameServer.registerInputs(id, inputType.fromBuffer(data));
@@ -58,6 +71,13 @@ export function runWebSocketServer(wss: WebSocketServer) {
         });
 
         ws.on('close', () => {
+            // Broadcast the fact that the player logged out
+            for (const ws of wss.clients) {
+                ws.send(playerLoggedOutType.toBuffer({
+                    topic: ServerTopic.PlayerLoggedOut,
+                    id
+                }));
+            }
             gameServer.removePlayer(id)
         });
     });

@@ -1,6 +1,6 @@
 import { Application } from "pixi.js";
 import { getInput, onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.js";
-import { ClientTopic, ServerTopic, SetNickname, gameUpdateType, inputType, setNicknameResponseType, setNicknameType, tickrateType, topicType } from "dtos";
+import { ClientTopic, ServerTopic, SetNickname, gameUpdateType, inputType, newPlayerType, setNicknameResponseType, setNicknameType, welcomeType, topicType, NeverError, playerLoggedOutType } from "dtos";
 import { Buffer } from "buffer";
 import { Renderer } from "./rendering/Renderer.js";
 import { setServerDelta } from "./delta.js";
@@ -52,15 +52,23 @@ ws.addEventListener("message", ({ data }) => {
     const buffer = Buffer.from(data);
     const topic: ServerTopic = topicType.fromBuffer(buffer, undefined, true);
     switch (topic) {
-        case (ServerTopic.Tickrate):
-            const message = tickrateType.fromBuffer(buffer);
-            setServerDelta(1000 / message.tickrate);
+        case (ServerTopic.Welcome):
+            const welcomeMessage = welcomeType.fromBuffer(buffer);
+            setServerDelta(1000 / welcomeMessage.tickrate);
+            Object.entries(welcomeMessage.players).forEach(([id, player]) => {
+                renderer.addPlayer(id, player)
+            });
             break;
+        case (ServerTopic.NewPlayer): {
+            const message = newPlayerType.fromBuffer(buffer);
+            renderer.addPlayer(message.id, message.player);
+            break;
+        }
         case (ServerTopic.SetNicknameResponse):
             const nicknameResponse = setNicknameResponseType.fromBuffer(buffer);
             if (nicknameResponse.success) {
                 myId = nicknameResponse.id;
-                renderer.myId = myId;
+                renderer.setMyId(myId);
             }
             break;
         case (ServerTopic.GameUpdate):
@@ -69,6 +77,13 @@ ws.addEventListener("message", ({ data }) => {
                 ws.send(inputType.toBuffer(getInput()));
             }
             break;
+        case (ServerTopic.PlayerLoggedOut): {
+            const message = playerLoggedOutType.fromBuffer(buffer)
+            renderer.removePlayer(message.id);
+            break;
+        }
+        default:
+            throw new NeverError(topic);
     }
 });
 

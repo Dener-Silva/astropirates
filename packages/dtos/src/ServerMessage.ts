@@ -1,22 +1,40 @@
 import avro from 'avro-js';
 
 export enum ServerTopic {
-    "Tickrate",
+    "Welcome",
+    "NewPlayer",
     "GameUpdate",
     "SetNicknameResponse",
+    "PlayerLoggedOut",
 }
 
-export type Tickrate = {
-    topic: ServerTopic.Tickrate
+export type PlayerAttributes = { nickname: string }
+export type Welcome = {
+    topic: ServerTopic.Welcome
     tickrate: number
+    players: Dictionary<PlayerAttributes>
 }
 
-export const tickrateType = avro.parse<Tickrate>({
+const playerAttributesSchema = {
+    name: "Player",
     type: "record",
-    name: "Tickrate",
+    fields: [
+        { name: "nickname", type: "string" }
+    ]
+}
+
+export const welcomeType = avro.parse<Welcome>({
+    type: "record",
+    name: "Welcome",
     fields: [
         { name: "topic", type: "int" },
-        { name: "tickrate", type: "double" }
+        { name: "tickrate", type: "double" },
+        {
+            name: "players", type: {
+                type: "map",
+                values: playerAttributesSchema
+            }
+        }
     ]
 });
 
@@ -64,5 +82,35 @@ export const setNicknameResponseType = avro.parse<SetNicknameResponse>({
         { name: "id", type: "string" },
         { name: "nickname", type: "string" },
         { name: "success", type: "boolean" }
+    ]
+});
+
+export type NewPlayer = {
+    topic: ServerTopic.NewPlayer
+    id: string
+    player: PlayerAttributes
+}
+
+export const newPlayerType = avro.parse<NewPlayer>({
+    type: "record",
+    name: "NewPlayer",
+    fields: [
+        { name: "topic", type: "int" },
+        { name: "id", type: "string" },
+        { name: "player", type: playerAttributesSchema },
+    ]
+});
+
+export type PlayerLoggedOut = {
+    topic: ServerTopic.PlayerLoggedOut
+    id: string
+}
+
+export const playerLoggedOutType = avro.parse<PlayerLoggedOut>({
+    type: "record",
+    name: "PlayerLoggedOut",
+    fields: [
+        { name: "topic", type: "int" },
+        { name: "id", type: "string" },
     ]
 });

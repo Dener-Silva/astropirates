@@ -1,5 +1,5 @@
-import { Application, Container, Graphics, Text } from "pixi.js";
-import { Dictionary, GameUpdate, Player, angleLerp, lerp } from "dtos";
+import { Application, Container } from "pixi.js";
+import { Dictionary, GameUpdate, PlayerAttributes, Player, angleLerp, lerp } from "dtos";
 import { serverDelta } from "../delta.js";
 import { ShipGraphics } from "./ShipGraphics.js";
 import { Stars } from "./Stars.js";
@@ -42,19 +42,17 @@ export class Renderer {
         for (const [id, player] of Object.entries(this.players)) {
             const previousPosition = this.previousPlayers[id];
             let ship = this.playerGraphics[id];
-            if (ship && previousPosition) {
+            if (!ship) {
+                console.error('playerGraphics not found for ID', id)
+            }
+            if (previousPosition) {
                 ship.x = lerp(previousPosition.x, player.x, interpolationFactor);
                 ship.y = lerp(previousPosition.y, player.y, interpolationFactor);
                 ship.graphics.rotation = angleLerp(previousPosition.rotation, player.rotation, interpolationFactor);
-            }
-            if (!ship) {
-                // The player has their own layer, so they can't be drawn behind other players
-                const layer = id === this.myId ? this.layers.player : this.layers.foreground;
-                ship = new ShipGraphics('Test', layer);
+            } else {
                 ship.x = player.x;
                 ship.y = player.y;
                 ship.graphics.rotation = player.rotation;
-                this.playerGraphics[id] = ship;
             }
 
             // Move camera to follow the player.
@@ -65,6 +63,31 @@ export class Renderer {
                 this.stars.update(ship.x, ship.y);
             }
         }
+    }
+
+    setMyId(id: string) {
+        this.myId = id;
+        // If player's ship was already created, move it to the correct layer
+        const ship = this.playerGraphics[id];
+        if (ship && ship.parent === this.layers.foreground) {
+            this.layers.foreground.removeChild(ship);
+            this.layers.player.addChild(ship);
+        }
+    }
+
+    addPlayer(id: string, newPlayer: PlayerAttributes) {
+        // The player has their own layer, so they can't be drawn behind other players
+        const layer = id === this.myId ? this.layers.player : this.layers.foreground;
+        const ship = new ShipGraphics(newPlayer.nickname, layer);
+        this.playerGraphics[id] = ship;
+    }
+
+    removePlayer(id: string) {
+        const graphics = this.playerGraphics[id];
+        graphics.parent.removeChild(graphics);
+        delete this.playerGraphics[id];
+        delete this.players[id];
+        delete this.previousPlayers[id];
     }
 
     serverUpdate(gameUpdate: GameUpdate) {

@@ -4,6 +4,7 @@ export default {
   testEnvironment: 'jsdom',
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^.+\\.(vert|frag|glsl)$': '<rootDir>/test/GLSLTransformer.ts'
   },
   transform: {
     '^.+\\.tsx?$': [
@@ -13,4 +14,5 @@ export default {
       },
     ],
   },
+  setupFiles: ["jest-webgl-canvas-mock"]
 };

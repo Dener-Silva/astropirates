@@ -6,14 +6,15 @@ export class GameServer {
     inputs: Dictionary<Input> = {};
     takenNames = new Set<string>();
 
-    addPlayer(id: string, nickname: string): boolean {
+    addPlayer(id: string, nickname: string): Player | null {
         if (this.takenNames.has(nickname)) {
-            return false;
+            return null;
         }
         console.debug(`Welcome ${nickname} (ID ${id})`)
-        this.players[id] = new Player(nickname);
+        const player = new Player(nickname);
+        this.players[id] = player;
         this.takenNames.add(nickname);
-        return true;
+        return player;
     }
 
     removePlayer(id: string) {
