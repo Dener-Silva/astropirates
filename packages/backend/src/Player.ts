@@ -50,6 +50,13 @@ export class Player implements ObjectWithCollider {
         // Move forward
         this.collider.x = this.x += this.xSpeed * delta;
         this.collider.y = this.y += this.ySpeed * delta;
+
+        // Limit movement to a radius of 1600px
+        if (Math.hypot(this.x, this.y) > 1600) {
+            const angle = Math.atan2(this.y, this.x);
+            this.collider.x = this.x = Math.cos(angle) * 1600;
+            this.collider.y = this.y = Math.sin(angle) * 1600;
+        }
     }
 
     onCollision(other: ObjectWithCollider): void {

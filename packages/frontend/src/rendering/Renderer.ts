@@ -4,6 +4,7 @@ import { serverDelta } from "../delta.js";
 import { ShipGraphics } from "./ShipGraphics.js";
 import { Stars } from "./Stars.js";
 import { BulletGraphics } from "./BulletGraphics.js";
+import { AsteroidBelt } from "./AsteroidBelt.js";
 
 interface Layers {
     background: Container;
@@ -24,6 +25,7 @@ export class Renderer {
     previousBullets: Dictionary<Bullet> = {};
     lastServerUpdate = performance.now();
     stars: Stars;
+    asteroidBelt: AsteroidBelt;
 
     constructor(private app: Application) {
 
@@ -36,6 +38,7 @@ export class Renderer {
 
         app.stage.addChild(...Object.values(this.layers));
         this.stars = new Stars(this.layers.background);
+        this.asteroidBelt = new AsteroidBelt(this.layers.background);
     }
 
     update() {
@@ -86,6 +89,7 @@ export class Renderer {
                 this.app.stage.pivot.x = ship.x;
                 this.app.stage.pivot.y = ship.y;
                 this.stars.update(ship.x, ship.y);
+                this.asteroidBelt.update(ship.x, ship.y);
             }
         }
 

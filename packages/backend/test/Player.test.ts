@@ -49,3 +49,26 @@ test('Should add own speed to bullet speed', () => {
 
     expect(bullet.ySpeed).toBe(bulletSpeed + 10);
 });
+
+test.each([
+    [1600, 0, 0],
+    [-1600, 0, Math.PI],
+    [0, 1600, Math.PI / 2],
+    [0, -1600, -Math.PI / 2],
+])('Limit distance without killing the speed: x:%f, y:%f, angle:%f', (x, y, angle) => {
+    const player = new Player('Test', new Polygon([]));
+    player.x = x;
+    player.y = y;
+    player.rotation = angle;
+    player.move({
+        topic: ClientTopic.Input,
+        angle,
+        magnitude: 1,
+        shoot: false
+    });
+
+    expect(player.x).toBeCloseTo(x);
+    expect(player.y).toBeCloseTo(y);
+    expect(player.rotation).toBeCloseTo(angle);
+    expect(Math.hypot(player.xSpeed, player.ySpeed)).toBeGreaterThan(0);
+});
