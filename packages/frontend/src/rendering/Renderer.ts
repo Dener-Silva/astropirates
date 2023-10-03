@@ -43,32 +43,12 @@ export class Renderer {
 
     update() {
 
-        // Clean dead GameObjects
-        for (const [id, player] of Object.entries(this.players)) {
-            if (player.state >= GameObjectState.ToBeRemoved) {
-                this.removePlayer(id);
-                if (player.state === GameObjectState.Exploded) {
-                    // TODO explode animation
-                }
-            }
-        }
-        for (const [id, bullet] of Object.entries(this.bullets)) {
-            if (bullet.state >= GameObjectState.ToBeRemoved) {
-                this.removeBullet(id);
-                if (bullet.state === GameObjectState.Exploded) {
-                    // TODO explode animation
-                }
-            }
-        }
-
         let timeSinceNextTick = Math.min(performance.now() - this.lastServerUpdate, 2 * serverDelta);
         let interpolationFactor = timeSinceNextTick / serverDelta;
 
         for (const [id, player] of Object.entries(this.players)) {
-
             const previousPosition = this.previousPlayers[id];
             let ship = this.playerGraphics[id];
-            // Player graphics are added on the event "NewPlayer".
             if (!ship) {
                 console.error('playerGraphics not found for ID', id);
                 continue;
@@ -94,12 +74,12 @@ export class Renderer {
         }
 
         for (const [id, bullet] of Object.entries(this.bullets)) {
-            let bulletGraphics = this.bulletGraphics[id];
-            // Bullets graphics are automatically added if their ID is unseen.
-            if (!bulletGraphics) {
-                this.bulletGraphics[id] = bulletGraphics = new BulletGraphics(this.layers.foreground);
-            }
             const previousPosition = this.previousBullets[id];
+            let bulletGraphics = this.bulletGraphics[id];
+            if (!bulletGraphics) {
+                console.error('bulletGraphics not found for ID', id);
+                continue;
+            }
             if (previousPosition) {
                 bulletGraphics.x = lerp(previousPosition.x, bullet.x, interpolationFactor);
                 bulletGraphics.y = lerp(previousPosition.y, bullet.y, interpolationFactor);
@@ -139,5 +119,33 @@ export class Renderer {
         this.players = gameUpdate.players;
         this.previousBullets = this.bullets;
         this.bullets = gameUpdate.bullets;
+
+        // Add and delete game objects
+        for (const [id, player] of Object.entries(this.players)) {
+            if (player.state >= GameObjectState.ToBeRemoved) {
+                // Remove exploded/offline players
+                this.removePlayer(id);
+                if (player.state === GameObjectState.Exploded) {
+                    // TODO explode animation
+                }
+            }
+            // Player graphics are added on the event "NewPlayer".
+        }
+        for (const [id, bullet] of Object.entries(this.bullets)) {
+            if (bullet.state >= GameObjectState.ToBeRemoved) {
+                // Remove expired/exploded bullets
+                this.removeBullet(id);
+                if (bullet.state === GameObjectState.Exploded) {
+                    // TODO explode animation
+                }
+            } else {
+                // Add new bullets
+                let bulletGraphics = this.bulletGraphics[id];
+                if (!bulletGraphics) {
+                    this.bulletGraphics[id] = new BulletGraphics(this.layers.foreground);
+                }
+            }
+        }
+
     }
 }

@@ -8,14 +8,15 @@
 			- Client - OK
 			- Server - OK
 		- Get and store player input - OK
-		- Compression?
         - Send data to players
             - Positions and rotations - OK
-            - Deaths
+            - Deaths - OK
             - Warps
+			- Shields
             - Names - OK
             - Scoreboard
     		- Send only what the player can see?
+		- Full update on packet loss?
 	- Main game loop
 		- Timing - OK
 		- Get frame specific input - OK
@@ -23,14 +24,15 @@
 		- Move
 			- Players (From user input) - OK
 			- Players (From AI)
-			- Bullets
-            - Limit (asteroid belt?)
-		- Shoot
+			- Bullets - OK
+            - Limit (asteroid belt?) - OK
+		- Shoot - OK
 		- Warp?
 		- Shield?
 		- Collide
-			- Player/bullet
-			- Player/limit
+			- Player/bullet - OK
+			- Player/limit - OK
+			- Shield/bullet
 		- Implement Scoreboard
 		- Respawn invencibility
 	- Test screen to see server simulation in real time
@@ -39,8 +41,8 @@
 	- Render (basic)
 		- Stars - OK
 		- Ship - OK
-		- Bullet
-		- Asteroids belt?
+		- Bullet - OK
+		- Asteroids belt - OK
 		- CRT shader?
 	- Input
         - Input to console.log - OK
@@ -53,26 +55,30 @@
 		- Send user names - OK
 		- Receive and store frame data / Deserialization
             - Object pool?
-			- Create
+			- Create - OK
 				- Players - OK
-				- Bullets
-			- Update
+				- Bullets - OK
+			- Update - OK
 				- Players - OK
-				- Bullets
-			- Delete
+				- Bullets - OK
+			- Delete - OK
 				- Players - OK
-				- Bullets
+				- Bullets - OK
+		- Full update on packet loss?
 	- Main game loop
-		- Move
+		- Move - OK
 			- Players - OK
-			- Bullets
+			- Bullets - OK
 		- Implement Scoreboard
 		- Respawn invencibility animation
-	- Rendering loop
+	- Rendering loop - OK
 		- interpolation - OK
-		- Update each renderer's position
+		- Update each renderer's position - OK
 			- Players - OK
-			- Bullets
+			- Bullets - OK
+	- Explosion effects
+		- Players
+		- Bullets
     - UI
 		- Install React?
         - Name choosing screen - OK

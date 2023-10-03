@@ -38,7 +38,6 @@ test.each([
         players: { 0: { x: 0, y: 0, rotation: 0, state } },
         bullets: {}
     });
-    renderer.update();
 
     expect(renderer.playerGraphics['0']).toBeUndefined();
     expect(playerGraphics.parent).toBeNull();
@@ -54,7 +53,6 @@ test('Should create bullet graphics', () => {
         players: {},
         bullets: { 0: { x: 0, y: 0, state: GameObjectState.Active } }
     });
-    renderer.update();
     const bulletGraphics = renderer.bulletGraphics['0'];
 
     expect(bulletGraphics).not.toBeUndefined();
@@ -68,21 +66,17 @@ test.each([
     const app = new Application();
     const renderer = new Renderer(app);
 
-    // First update will create the bullet graphics
     renderer.serverUpdate({
         topic: ServerTopic.GameUpdate,
         players: {},
         bullets: { 0: { x: 0, y: 0, state: GameObjectState.Active } }
     });
-    renderer.update();
     const bulletGraphics = renderer.bulletGraphics['0'];
-    // Second update will delete it
     renderer.serverUpdate({
         topic: ServerTopic.GameUpdate,
         players: {},
         bullets: { 0: { x: 0, y: 0, state } }
     });
-    renderer.update();
 
     expect(renderer.bulletGraphics['0']).toBeUndefined();
     expect(bulletGraphics.parent).toBeNull();
