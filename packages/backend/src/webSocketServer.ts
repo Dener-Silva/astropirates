@@ -59,6 +59,7 @@ export function runWebSocketServer(wss: WebSocketServer) {
             for (const ws of wss.clients) {
                 ws.send(gameUpdateType.toBuffer(state));
             }
+            gameServer.cleanup();
         }, delta)
     )
 }

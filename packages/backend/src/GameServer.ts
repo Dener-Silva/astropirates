@@ -50,20 +50,6 @@ export class GameServer {
     }
 
     update(): GameUpdate {
-
-        // Clean dead GameObjects
-        for (const [id, player] of Object.entries(this.players)) {
-            if (player.state >= GameObjectState.ToBeRemoved) {
-                this.removePlayer(id)
-            }
-        }
-        for (const [id, bullet] of Object.entries(this.bullets)) {
-            if (bullet.state >= GameObjectState.ToBeRemoved) {
-                delete this.bullets[id];
-                this.sweepAndPrune.remove(bullet.collider);
-            }
-        }
-
         // Proccess bullet updates before inputs, so players can see the first frame
         for (const bullet of Object.values(this.bullets)) {
             bullet.update();
@@ -100,5 +86,22 @@ export class GameServer {
             bullets: this.bullets
         }
         return state;
+    }
+
+    /**
+     * Clean dead GameObjects after the game loop
+     */
+    cleanup() {
+        for (const [id, player] of Object.entries(this.players)) {
+            if (player.state >= GameObjectState.ToBeRemoved) {
+                this.removePlayer(id)
+            }
+        }
+        for (const [id, bullet] of Object.entries(this.bullets)) {
+            if (bullet.state >= GameObjectState.ToBeRemoved) {
+                delete this.bullets[id];
+                this.sweepAndPrune.remove(bullet.collider);
+            }
+        }
     }
 }

@@ -21,7 +21,7 @@ test('Should free the name for use', () => {
 
     gameServer.addPlayer('0', 'Technocat');
     gameServer.onPlayerLoggedOut('0');
-    gameServer.update();
+    gameServer.cleanup();
     const result = gameServer.addPlayer('1', 'Technocat');
 
     expect(result).toBeTruthy();
@@ -45,10 +45,10 @@ test.each([
     expect(player).not.toBeNull();
     player!.state = state;
 
-    const result = gameServer.update();
+    gameServer.cleanup();
 
     expect(remove).toHaveBeenCalledWith(player!.collider);
-    expect(result.players['0']).toBeUndefined();
+    expect(gameServer.players['0']).toBeUndefined();
 });
 
 test.each([
@@ -64,10 +64,10 @@ test.each([
     }, new Point(), null as any);
     deadBullet.state = state;
 
-    const result = gameServer.update();
+    gameServer.cleanup();
 
     expect(remove).toHaveBeenCalledWith(deadBullet.collider);
-    expect(result.bullets[0]).toBeUndefined();
+    expect(gameServer.bullets[0]).toBeUndefined();
 });
 
 test("Should add bullet's collider", () => {
@@ -117,7 +117,8 @@ test('Adding player twice should be idempotent', () => {
 
     const player = gameServer.addPlayer('0', 'Technocat');
     player!.state = GameObjectState.Exploded;
-    gameServer.update()
+    gameServer.update();
+    gameServer.cleanup();
     const player2 = gameServer.addPlayer('0', 'Technocat');
     const result = gameServer.update();
 
@@ -151,7 +152,7 @@ test("Should remove dead players's nickname after they log out", () => {
     const player = gameServer.addPlayer('0', 'Technocat');
     expect(player).not.toBeNull();
     player!.state = GameObjectState.Exploded;
-    gameServer.update();
+    gameServer.cleanup();
     let result = gameServer.addPlayer('0', 'Technocat');
 
     expect(result).not.toBeNull();
