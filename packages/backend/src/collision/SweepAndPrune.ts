@@ -42,12 +42,10 @@ export class SweepAndPrune {
         this.colliders.push(collider);
     }
 
-    remove(colliders: Collider[]) {
-        const toBeRemoved = new Set(colliders);
-        for (let i = this.colliders.length; i >= 0; i--) {
-            if (toBeRemoved.delete(this.colliders[i])) {
-                this.colliders.splice(i, 1);
-            }
+    remove(collider: Collider) {
+        const i = this.colliders.indexOf(collider);
+        if (i >= 0) {
+            this.colliders.splice(i, 1);
         }
     }
 
@@ -56,6 +54,6 @@ export class SweepAndPrune {
 function axisAlignedBoundingBoxCollision(a_aabb: AABB, b_aabb: AABB) {
     return a_aabb.maxX >= b_aabb.minX &&
         a_aabb.minX <= b_aabb.maxX &&
-        a_aabb.maxY >= b_aabb.minX &&
+        a_aabb.maxY >= b_aabb.minY &&
         a_aabb.minY <= b_aabb.maxY;
 }

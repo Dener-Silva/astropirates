@@ -45,7 +45,7 @@ describe('Polygon', () => {
             polygon.rotation = Math.PI / 2;
 
             let expected = [1, -1, -1, -1, -1, 1, 1, 1];
-            expect(polygon.points).toBeDeepCloseTo(new Float64Array(expected));
+            expect(polygon.points).toBeDeepCloseTo(expected);
         });
 
         test('Should rotate 45 degrees', () => {
@@ -54,7 +54,7 @@ describe('Polygon', () => {
             polygon.rotation = Math.PI / 4;
 
             let expected = [0, -Math.SQRT2, -Math.SQRT2, 0, 0, Math.SQRT2, Math.SQRT2, 0];
-            expect(polygon.points).toBeDeepCloseTo(new Float64Array(expected));
+            expect(polygon.points).toBeDeepCloseTo(expected);
         });
 
         test('Should rotate 90 degrees on the correct pivot', () => {
@@ -64,7 +64,7 @@ describe('Polygon', () => {
             polygon.rotation = Math.PI / 2;
 
             let expected = [2, 0, 0, 0, 0, 2, 2, 2];
-            expect(polygon.points).toBeDeepCloseTo(new Float64Array(expected));
+            expect(polygon.points).toBeDeepCloseTo(expected);
         });
 
         test('Should update the points when rotating', () => {
@@ -74,7 +74,21 @@ describe('Polygon', () => {
             polygon.rotation = Math.PI / 2;
 
             let expected = [1, -1, -1, -1, -1, 1, 1, 1];
-            expect(polygon.points).toBeDeepCloseTo(new Float64Array(expected));
+            expect(polygon.points).toBeDeepCloseTo(expected);
+        });
+
+    });
+
+    describe('Translation', () => {
+
+        test('Should move points to the correct x and y', () => {
+            let polygon = new Polygon([-1, -1, -1, 1, 1, 1, 1, -1]);
+            for (let i = 0; i < 100; i++) {
+                polygon.x = i;
+                polygon.y = i;
+                let expected = [-1, -1, -1, 1, 1, 1, 1, -1].map(p => p + i);
+                expect(polygon.points).toBeDeepCloseTo(expected);
+            }
         });
 
     });

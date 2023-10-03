@@ -1,8 +1,11 @@
+import { ClientTopic, GameObjectState } from "dtos";
 import { GameServer } from "../src/GameServer.js";
 import { SweepAndPrune } from "../src/collision/SweepAndPrune.js";
+import { Bullet } from "../src/Bullet.js";
+import { Point } from "../src/collision/colliders/Point.js";
+import { Player } from "../src/Player.js";
 
-jest.mock('../src/delta.js', () => ({ delta: 50 }));
-jest.mock('../src/collision/SweepAndPrune.js');
+jest.mock('../src/delta.js', () => ({ delta: 50, tickrate: 20 }));
 
 test('Should not add two players with the same name, and return false', () => {
     const gameServer = new GameServer(new SweepAndPrune());
@@ -17,8 +20,140 @@ test('Should free the name for use', () => {
     const gameServer = new GameServer(new SweepAndPrune());
 
     gameServer.addPlayer('0', 'Technocat');
-    gameServer.removePlayer('0');
+    gameServer.onPlayerLoggedOut('0');
+    gameServer.update();
     const result = gameServer.addPlayer('1', 'Technocat');
 
     expect(result).toBeTruthy();
+});
+
+test('Should ignore when removePlayer is called on an ID that does not exist', () => {
+    const gameServer = new GameServer(new SweepAndPrune());
+
+    expect(() => gameServer.onPlayerLoggedOut('0')).not.toThrow();
+});
+
+test.each([
+    GameObjectState.Offline,
+    GameObjectState.Exploded
+])('Should remove dead players', (state) => {
+    const sweepAndPrune = new SweepAndPrune();
+    const remove = sweepAndPrune.remove = jest.fn();
+    const gameServer = new GameServer(sweepAndPrune);
+
+    const player = gameServer.addPlayer('0', 'Technocat');
+    expect(player).not.toBeNull();
+    player!.state = state;
+
+    const result = gameServer.update();
+
+    expect(remove).toHaveBeenCalledWith(player!.collider);
+    expect(result.players['0']).toBeUndefined();
+});
+
+test.each([
+    GameObjectState.Expired,
+    GameObjectState.Exploded
+])('Should remove dead bullets', (state) => {
+    const sweepAndPrune = new SweepAndPrune();
+    const remove = sweepAndPrune.remove = jest.fn();
+    const gameServer = new GameServer(sweepAndPrune);
+
+    const deadBullet = gameServer.bullets[0] = new Bullet({
+        x: 0, y: 0, xSpeed: 0, ySpeed: 0
+    }, new Point(), null as any);
+    deadBullet.state = state;
+
+    const result = gameServer.update();
+
+    expect(remove).toHaveBeenCalledWith(deadBullet.collider);
+    expect(result.bullets[0]).toBeUndefined();
+});
+
+test("Should add bullet's collider", () => {
+    const sweepAndPrune = new SweepAndPrune();
+    const add = sweepAndPrune.add = jest.fn();
+    const gameServer = new GameServer(sweepAndPrune);
+
+    gameServer.addPlayer('0', 'Technocat');
+    gameServer.registerInputs('0', {
+        topic: ClientTopic.Input,
+        angle: 0,
+        magnitude: 0,
+        shoot: true
+    })
+
+    gameServer.update();
+    const player = Object.values(gameServer.players)[0];
+    const bullet = Object.values(gameServer.bullets)[0];
+
+    expect(add).toHaveBeenCalledWith(player.collider);
+    expect(add).toHaveBeenCalledWith(bullet.collider);
+});
+
+test("Should ignore dead player's inputs", () => {
+    const sweepAndPrune = new SweepAndPrune();
+    const add = sweepAndPrune.add = jest.fn();
+    const gameServer = new GameServer(sweepAndPrune);
+
+    gameServer.addPlayer('0', 'Technocat');
+    gameServer.registerInputs('0', {
+        topic: ClientTopic.Input,
+        angle: 0,
+        magnitude: 0,
+        shoot: true
+    })
+
+    gameServer.update();
+    const player = Object.values(gameServer.players)[0];
+    const bullet = Object.values(gameServer.bullets)[0];
+
+    expect(add).toHaveBeenCalledWith(player.collider);
+    expect(add).toHaveBeenCalledWith(bullet.collider);
+});
+
+test('Adding player twice should be idempotent', () => {
+    const gameServer = new GameServer(new SweepAndPrune());
+
+    const player = gameServer.addPlayer('0', 'Technocat');
+    player!.state = GameObjectState.Exploded;
+    gameServer.update()
+    const player2 = gameServer.addPlayer('0', 'Technocat');
+    const result = gameServer.update();
+
+    expect(player2).toBeTruthy();
+    expect(player2?.nickname).toEqual('Technocat');
+    expect(result.players[0]).toBe(player2);
+    expect(Object.keys(result.players)).toHaveLength(1);
+});
+
+test('Should update the nickname', () => {
+    const gameServer = new GameServer(new SweepAndPrune());
+
+    // Simulate actual lifecycle
+    const player = gameServer.addPlayer('0', 'Old Nickname');
+    player!.state = GameObjectState.Exploded;
+    gameServer.update()
+    const player2 = gameServer.addPlayer('0', 'New Nickname');
+    const result = gameServer.update();
+
+    expect(player2).toBeTruthy();
+    expect(player2?.nickname).toEqual('New Nickname');
+    expect(result.players[0]).toBe(player2);
+    expect(Object.keys(result.players)).toHaveLength(1);
+});
+
+test("Should remove dead players's nickname after they log out", () => {
+    const sweepAndPrune = new SweepAndPrune();
+    const remove = sweepAndPrune.remove = jest.fn();
+    const gameServer = new GameServer(sweepAndPrune);
+
+    const player = gameServer.addPlayer('0', 'Technocat');
+    expect(player).not.toBeNull();
+    player!.state = GameObjectState.Exploded;
+    gameServer.update();
+    let result = gameServer.addPlayer('0', 'Technocat');
+
+    expect(result).not.toBeNull();
+    expect(result!.nickname).toEqual('Technocat');
 });

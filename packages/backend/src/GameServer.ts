@@ -1,48 +1,89 @@
-import { GameUpdate, Input, Dictionary, ServerTopic } from 'dtos';
+import { GameUpdate, Input, Dictionary, ServerTopic, GameObjectState } from 'dtos';
 import { Player } from './Player.js';
 import { SweepAndPrune } from './collision/SweepAndPrune.js';
 import { Polygon } from './collision/colliders/Polygon.js';
+import { Bullet } from './Bullet.js';
+import { newId } from './newId.js';
 
 export class GameServer {
     players: Dictionary<Player> = {};
+    bullets: Dictionary<Bullet> = {};
     inputs: Dictionary<Input> = {};
-    takenNames = new Set<string>();
 
     constructor(private sweepAndPrune: SweepAndPrune) { }
 
     addPlayer(id: string, nickname: string): Player | null {
-        if (this.takenNames.has(nickname)) {
+        if (Object.values(this.players).some((p) => p.nickname === nickname)) {
             return null;
         }
-        console.debug(`Welcome ${nickname} (ID ${id})`)
-        const collider = new Polygon([-45, -30, -15, 0, -45, 30, 45, 0]);
+        if (process.env.NODE_ENV !== 'test') {
+            console.debug(`Welcome ${nickname} (ID ${id})`)
+        }
+        const collider = new Polygon([-45, -30, -45, 30, 45, 0]);
         this.sweepAndPrune.add(collider);
         const player = new Player(nickname, collider);
         this.players[id] = player;
-        this.takenNames.add(nickname);
         return player;
     }
 
-    removePlayer(id: string) {
-        console.debug(`Bye ${this.players[id]?.nickname} (ID ${id})`)
+    onPlayerLoggedOut(id: string) {
+        if (process.env.NODE_ENV !== 'test') {
+            console.debug(`Bye ${this.players[id]?.nickname} (ID ${id})`)
+        }
         const player = this.players[id];
         if (player) {
-            this.takenNames.delete(player.nickname)
+            player.state = GameObjectState.Offline;
         }
+    }
+
+    private removePlayer(id: string) {
+        const player = this.players[id];
+        this.sweepAndPrune.remove(player?.collider);
         delete this.players[id];
         delete this.inputs[id];
-        this.sweepAndPrune.remove([player.collider]);
     }
 
     registerInputs(id: string, input: Input) {
-        this.inputs[id] = input;
+        if (this.players[id]) {
+            this.inputs[id] = input;
+        }
     }
 
     update(): GameUpdate {
+
+        // Clean dead GameObjects
+        for (const [id, player] of Object.entries(this.players)) {
+            if (player.state >= GameObjectState.ToBeRemoved) {
+                this.removePlayer(id)
+            }
+        }
+        for (const [id, bullet] of Object.entries(this.bullets)) {
+            if (bullet.state >= GameObjectState.ToBeRemoved) {
+                delete this.bullets[id];
+                this.sweepAndPrune.remove(bullet.collider);
+            }
+        }
+
+        // Proccess bullet updates before inputs, so players can see the first frame
+        for (const bullet of Object.values(this.bullets)) {
+            bullet.update();
+        }
+
         // Proccess input
         for (const [id, input] of Object.entries(this.inputs)) {
             const player = this.players[id]!;
             player.move(input);
+            if (input.shoot && player.canShoot) {
+                const bullet = player.shoot();
+                const id = newId();
+                this.sweepAndPrune.add(bullet.collider);
+                this.bullets[id] = bullet;
+            }
+        }
+
+        // Proccess player updates
+        for (const player of Object.values(this.players)) {
+            player.update();
         }
 
         // Proccess collisions
@@ -55,7 +96,8 @@ export class GameServer {
 
         const state: GameUpdate = {
             topic: ServerTopic.GameUpdate,
-            players: this.players
+            players: this.players,
+            bullets: this.bullets
         }
         return state;
     }

@@ -1,16 +1,16 @@
 import avro from 'avro-js';
 
 export enum ServerTopic {
-    "Welcome",
-    "NewPlayer",
-    "GameUpdate",
-    "SetNicknameResponse",
-    "PlayerLoggedOut",
+    Welcome,
+    NicknameAlreadyExists,
+    NewPlayer,
+    GameUpdate
 }
 
 export type PlayerAttributes = { nickname: string }
 export type Welcome = {
     topic: ServerTopic.Welcome
+    id: string
     tickrate: number
     players: Dictionary<PlayerAttributes>
 }
@@ -28,6 +28,7 @@ export const welcomeType = avro.parse<Welcome>({
     name: "Welcome",
     fields: [
         { name: "topic", type: "int" },
+        { name: "id", type: "string" },
         { name: "tickrate", type: "double" },
         {
             name: "players", type: {
@@ -38,11 +39,22 @@ export const welcomeType = avro.parse<Welcome>({
     ]
 });
 
-export type Player = { x: number, y: number, rotation: number }
+export enum GameObjectState {
+    Invulnerable,
+    Active,
+    // The server will delete objects with the states below
+    ToBeRemoved,
+    Expired,
+    Offline,
+    Exploded
+}
+export type Player = { state: GameObjectState, x: number, y: number, rotation: number }
+export type Bullet = { state: GameObjectState, x: number, y: number }
 export type Dictionary<T> = { [id: string]: T }
 export type GameUpdate = {
     topic: ServerTopic.GameUpdate
     players: Dictionary<Player>
+    bullets: Dictionary<Bullet>
 }
 
 export const gameUpdateType = avro.parse<GameUpdate>({
@@ -57,31 +69,28 @@ export const gameUpdateType = avro.parse<GameUpdate>({
                     name: "Player",
                     type: "record",
                     fields: [
+                        { name: "state", type: "int" },
                         { name: "x", type: "float" },
                         { name: "y", type: "float" },
                         { name: "rotation", type: "float" }
                     ]
                 }
             }
+        },
+        {
+            name: "bullets", type: {
+                type: "map",
+                values: {
+                    name: "Bullets",
+                    type: "record",
+                    fields: [
+                        { name: "state", type: "int" },
+                        { name: "x", type: "float" },
+                        { name: "y", type: "float" }
+                    ]
+                }
+            }
         }
-    ]
-});
-
-export type SetNicknameResponse = {
-    topic: ServerTopic.SetNicknameResponse
-    id: string
-    nickname: string
-    success: boolean
-}
-
-export const setNicknameResponseType = avro.parse<SetNicknameResponse>({
-    type: "record",
-    name: "SetNicknameResponse",
-    fields: [
-        { name: "topic", type: "int" },
-        { name: "id", type: "string" },
-        { name: "nickname", type: "string" },
-        { name: "success", type: "boolean" }
     ]
 });
 
@@ -101,16 +110,3 @@ export const newPlayerType = avro.parse<NewPlayer>({
     ]
 });
 
-export type PlayerLoggedOut = {
-    topic: ServerTopic.PlayerLoggedOut
-    id: string
-}
-
-export const playerLoggedOutType = avro.parse<PlayerLoggedOut>({
-    type: "record",
-    name: "PlayerLoggedOut",
-    fields: [
-        { name: "topic", type: "int" },
-        { name: "id", type: "string" },
-    ]
-});

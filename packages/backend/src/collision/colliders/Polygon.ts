@@ -10,16 +10,20 @@ export class Polygon implements Collider {
     private _x = 0;
     private _y = 0;
     private _rotation = 0;
+    private _points: number[]
+    private originalPoints: number[]
     private radius: number;
     // Optimization: Points are cached for better performance.
     // They need to be recalculated every time x, y or rotation are changed.
     private needsRecalcualtion = true;
 
-    constructor(private _points: number[]) {
-        if (_points.length % 2) {
-            throw new Error(`Points array size should be multiple of two. The actual size is ${_points.length}.`)
+    constructor(points: number[]) {
+        if (points.length % 2) {
+            throw new Error(`Points array size should be multiple of two. The actual size is ${points.length}.`)
         }
-        this.radius = this.getRadius(_points);
+        this.originalPoints = points.slice();
+        this._points = points;
+        this.radius = this.getRadius(points);
     }
 
     private getRadius(points: number[]) {
@@ -82,8 +86,8 @@ export class Polygon implements Collider {
         // Recalculate points
         for (let ix = 0, iy = 1; ix < this._points.length; ix += 2, iy += 2) {
             // Start at original points
-            const originalX = this._points[ix];
-            const originalY = this._points[iy];
+            const originalX = this.originalPoints[ix];
+            const originalY = this.originalPoints[iy];
             // Rotate and translate
             this._points[ix] = (originalX * cos - originalY * sin) + this.x;
             this._points[iy] = (originalX * sin + originalY * cos) + this.y;

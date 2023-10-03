@@ -1,8 +1,9 @@
 import { Application, Container } from "pixi.js";
-import { Dictionary, GameUpdate, PlayerAttributes, Player, angleLerp, lerp } from "dtos";
+import { Dictionary, GameUpdate, PlayerAttributes, Player, angleLerp, lerp, GameObjectState, Bullet } from "dtos";
 import { serverDelta } from "../delta.js";
 import { ShipGraphics } from "./ShipGraphics.js";
 import { Stars } from "./Stars.js";
+import { BulletGraphics } from "./BulletGraphics.js";
 
 interface Layers {
     background: Container;
@@ -16,8 +17,11 @@ export class Renderer {
     layers: Layers;
     myId: string | undefined = undefined;
     playerGraphics: Dictionary<ShipGraphics> = {};
+    bulletGraphics: Dictionary<BulletGraphics> = {};
     players: Dictionary<Player> = {};
     previousPlayers: Dictionary<Player> = {};
+    bullets: Dictionary<Bullet> = {};
+    previousBullets: Dictionary<Bullet> = {};
     lastServerUpdate = performance.now();
     stars: Stars;
 
@@ -36,14 +40,35 @@ export class Renderer {
 
     update() {
 
+        // Clean dead GameObjects
+        for (const [id, player] of Object.entries(this.players)) {
+            if (player.state >= GameObjectState.ToBeRemoved) {
+                this.removePlayer(id);
+                if (player.state === GameObjectState.Exploded) {
+                    // TODO explode animation
+                }
+            }
+        }
+        for (const [id, bullet] of Object.entries(this.bullets)) {
+            if (bullet.state >= GameObjectState.ToBeRemoved) {
+                this.removeBullet(id);
+                if (bullet.state === GameObjectState.Exploded) {
+                    // TODO explode animation
+                }
+            }
+        }
+
         let timeSinceNextTick = Math.min(performance.now() - this.lastServerUpdate, 2 * serverDelta);
         let interpolationFactor = timeSinceNextTick / serverDelta;
 
         for (const [id, player] of Object.entries(this.players)) {
+
             const previousPosition = this.previousPlayers[id];
             let ship = this.playerGraphics[id];
+            // Player graphics are added on the event "NewPlayer".
             if (!ship) {
-                console.error('playerGraphics not found for ID', id)
+                console.error('playerGraphics not found for ID', id);
+                continue;
             }
             if (previousPosition) {
                 ship.x = lerp(previousPosition.x, player.x, interpolationFactor);
@@ -63,15 +88,21 @@ export class Renderer {
                 this.stars.update(ship.x, ship.y);
             }
         }
-    }
 
-    setMyId(id: string) {
-        this.myId = id;
-        // If player's ship was already created, move it to the correct layer
-        const ship = this.playerGraphics[id];
-        if (ship && ship.parent === this.layers.foreground) {
-            this.layers.foreground.removeChild(ship);
-            this.layers.player.addChild(ship);
+        for (const [id, bullet] of Object.entries(this.bullets)) {
+            let bulletGraphics = this.bulletGraphics[id];
+            // Bullets graphics are automatically added if their ID is unseen.
+            if (!bulletGraphics) {
+                this.bulletGraphics[id] = bulletGraphics = new BulletGraphics(this.layers.foreground);
+            }
+            const previousPosition = this.previousBullets[id];
+            if (previousPosition) {
+                bulletGraphics.x = lerp(previousPosition.x, bullet.x, interpolationFactor);
+                bulletGraphics.y = lerp(previousPosition.y, bullet.y, interpolationFactor);
+            } else {
+                bulletGraphics.x = bullet.x;
+                bulletGraphics.y = bullet.y;
+            }
         }
     }
 
@@ -82,17 +113,27 @@ export class Renderer {
         this.playerGraphics[id] = ship;
     }
 
-    removePlayer(id: string) {
+    private removePlayer(id: string) {
         const graphics = this.playerGraphics[id];
-        graphics.parent.removeChild(graphics);
+        graphics?.parent.removeChild(graphics);
         delete this.playerGraphics[id];
         delete this.players[id];
         delete this.previousPlayers[id];
+    }
+
+    private removeBullet(id: string) {
+        const graphics = this.bulletGraphics[id];
+        graphics?.parent.removeChild(graphics);
+        delete this.bulletGraphics[id];
+        delete this.bullets[id];
+        delete this.previousBullets[id];
     }
 
     serverUpdate(gameUpdate: GameUpdate) {
         this.lastServerUpdate = performance.now();
         this.previousPlayers = this.players;
         this.players = gameUpdate.players;
+        this.previousBullets = this.bullets;
+        this.bullets = gameUpdate.bullets;
     }
 }

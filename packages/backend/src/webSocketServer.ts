@@ -1,36 +1,17 @@
-import { ClientTopic, NeverError, inputType, setNicknameType, setNicknameResponseType, ServerTopic, topicType, gameUpdateType, welcomeType, newPlayerType, playerLoggedOutType } from "dtos";
+import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, gameUpdateType, welcomeType, newPlayerType } from "dtos";
 import { WebSocketServer } from "ws";
 import { GameServer } from "./GameServer.js";
 import { delta, tickrate } from './delta.js';
 import { SweepAndPrune } from "./collision/SweepAndPrune.js";
-
-function encodeBase94(number: number) {
-    const base94Chars = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-
-    if (number === 0) {
-        return '!';
-    }
-
-    let encoded = "";
-    while (number > 0) {
-        const remainder = number % 94;
-        encoded = base94Chars[remainder] + encoded;
-        number = Math.floor(number / 94);
-    }
-
-    return encoded;
-}
+import { newId } from "./newId.js";
 
 export function runWebSocketServer(wss: WebSocketServer) {
 
     const gameServer = new GameServer(new SweepAndPrune());
-    let currentId = 0;
 
     wss.on('connection', (ws) => {
-        ws.send(welcomeType.toBuffer({ topic: ServerTopic.Welcome, tickrate, players: gameServer.players }))
-        // Base94 strings use less bandwidth, but numeric strings might be a little faster
-        // Needs more testing to see if the tradeoff is worth it
-        const id = encodeBase94(currentId++);
+        const id = newId();
+        ws.send(welcomeType.toBuffer({ topic: ServerTopic.Welcome, tickrate, id, players: gameServer.players }))
 
         ws.on('error', console.error);
 
@@ -42,13 +23,6 @@ export function runWebSocketServer(wss: WebSocketServer) {
                         const message = setNicknameType.fromBuffer(data);
                         // Try to add player to the server
                         const player = gameServer.addPlayer(id, message.nickname);
-                        // Always respond with success or failure
-                        ws.send(setNicknameResponseType.toBuffer({
-                            topic: ServerTopic.SetNicknameResponse,
-                            id,
-                            nickname: message.nickname,
-                            success: Boolean(player)
-                        }))
                         // If player was successfully added, broadcast
                         if (player) {
                             for (const ws of wss.clients) {
@@ -58,6 +32,8 @@ export function runWebSocketServer(wss: WebSocketServer) {
                                     player
                                 }));
                             }
+                        } else {
+                            ws.send(topicType.toBuffer(ServerTopic.NicknameAlreadyExists));
                         }
                         break;
                     case ClientTopic.Input:
@@ -72,14 +48,7 @@ export function runWebSocketServer(wss: WebSocketServer) {
         });
 
         ws.on('close', () => {
-            // Broadcast the fact that the player logged out
-            for (const ws of wss.clients) {
-                ws.send(playerLoggedOutType.toBuffer({
-                    topic: ServerTopic.PlayerLoggedOut,
-                    id
-                }));
-            }
-            gameServer.removePlayer(id)
+            gameServer.onPlayerLoggedOut(id);
         });
     });
 

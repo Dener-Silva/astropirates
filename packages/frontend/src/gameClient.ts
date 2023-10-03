@@ -1,6 +1,6 @@
 import { Application } from "pixi.js";
 import { getInput, onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.js";
-import { ClientTopic, ServerTopic, SetNickname, gameUpdateType, inputType, newPlayerType, setNicknameResponseType, setNicknameType, welcomeType, topicType, NeverError, playerLoggedOutType } from "dtos";
+import { ClientTopic, ServerTopic, SetNickname, gameUpdateType, inputType, newPlayerType, setNicknameType, welcomeType, topicType, NeverError } from "dtos";
 import { Buffer } from "buffer";
 import { Renderer } from "./rendering/Renderer.js";
 import { setServerDelta } from "./delta.js";
@@ -44,6 +44,9 @@ window.addEventListener("resize", resize);
 document.addEventListener('pointermove', onPointerMove);
 document.addEventListener('mousedown', onMouseDown);
 document.addEventListener('mouseup', onMouseUp);
+document.addEventListener('keydown', (e) => e.key === ' ' && onMouseDown());
+document.addEventListener('keyup', (e) => e.key === ' ' && onMouseUp());
+
 
 const renderer = new Renderer(app)
 let myId: string | undefined = undefined;
@@ -54,6 +57,8 @@ ws.addEventListener("message", ({ data }) => {
     switch (topic) {
         case (ServerTopic.Welcome):
             const welcomeMessage = welcomeType.fromBuffer(buffer);
+            myId = welcomeMessage.id;
+            renderer.myId = myId;
             setServerDelta(1000 / welcomeMessage.tickrate);
             Object.entries(welcomeMessage.players).forEach(([id, player]) => {
                 renderer.addPlayer(id, player)
@@ -62,26 +67,22 @@ ws.addEventListener("message", ({ data }) => {
         case (ServerTopic.NewPlayer): {
             const message = newPlayerType.fromBuffer(buffer);
             renderer.addPlayer(message.id, message.player);
-            break;
-        }
-        case (ServerTopic.SetNicknameResponse):
-            const nicknameResponse = setNicknameResponseType.fromBuffer(buffer);
-            if (nicknameResponse.success) {
-                myId = nicknameResponse.id;
-                renderer.setMyId(myId);
+            if (message.id === myId) {
+                nameForm.parentElement!.style.display = 'none';
             }
             break;
+        }
+        case (ServerTopic.NicknameAlreadyExists):
+            console.warn(ServerTopic[topic]);
+            // TODO show error on screen
+            break;
         case (ServerTopic.GameUpdate):
-            renderer.serverUpdate(gameUpdateType.fromBuffer(buffer));
-            if (myId) {
+            const gameUpdate = gameUpdateType.fromBuffer(buffer);
+            renderer.serverUpdate(gameUpdate);
+            if (myId && gameUpdate.players[myId]) {
                 ws.send(inputType.toBuffer(getInput()));
             }
             break;
-        case (ServerTopic.PlayerLoggedOut): {
-            const message = playerLoggedOutType.fromBuffer(buffer)
-            renderer.removePlayer(message.id);
-            break;
-        }
         default:
             throw new NeverError(topic);
     }
@@ -99,7 +100,6 @@ nameForm.onsubmit = (e) => {
         nickname: nameForm.nickname.value
     };
     ws.send(setNicknameType.toBuffer(clientMessage));
-    nameForm.parentElement!.style.visibility = 'hidden';
 }
 const updateButton = () => {
     nameForm.go.disabled = nameForm.nickname.value?.trim().length < 1;
