@@ -4,10 +4,18 @@ import { GameServer } from "./GameServer.js";
 import { delta, tickrate } from './delta.js';
 import { SweepAndPrune } from "./collision/SweepAndPrune.js";
 import { newId } from "./newId.js";
+import { Type } from "avro-js";
 
 export function runWebSocketServer(wss: WebSocketServer) {
 
     const gameServer = new GameServer(new SweepAndPrune());
+
+    function broadcast<T>(type: Type<T>, message: T) {
+        const buffer = type.toBuffer(message);
+        for (const ws of wss.clients) {
+            ws.send(buffer);
+        }
+    }
 
     wss.on('connection', (ws) => {
         const id = newId();
@@ -25,13 +33,11 @@ export function runWebSocketServer(wss: WebSocketServer) {
                         const player = gameServer.addPlayer(id, message.nickname);
                         // If player was successfully added, broadcast
                         if (player) {
-                            for (const ws of wss.clients) {
-                                ws.send(newPlayerType.toBuffer({
-                                    topic: ServerTopic.NewPlayer,
-                                    id,
-                                    player
-                                }));
-                            }
+                            broadcast(newPlayerType, {
+                                topic: ServerTopic.NewPlayer,
+                                id,
+                                player
+                            });
                         } else {
                             ws.send(topicType.toBuffer(ServerTopic.NicknameAlreadyExists));
                         }
@@ -55,10 +61,8 @@ export function runWebSocketServer(wss: WebSocketServer) {
     // Using setImmediate so the tickrate can be read from the dotenv file.
     setImmediate(() =>
         setInterval(() => {
-            const state = gameServer.update();
-            for (const ws of wss.clients) {
-                ws.send(gameUpdateType.toBuffer(state));
-            }
+            const gameUpdate = gameServer.update();
+            broadcast(gameUpdateType, gameUpdate);
             gameServer.cleanup();
         }, delta)
     )
