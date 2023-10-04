@@ -12,7 +12,14 @@
         "test": "npm run test:dtos && npm run test:backend && npm run test:frontend",
         "test:backend": "npm test --prefix packages/backend",
         "test:dtos": "npm test --prefix packages/dtos",
-        "test:frontend": "npm test --prefix packages/frontend"
+        "test:frontend": "npm test --prefix packages/frontend",
+        "build": "concurrently npm:build:*",
+        "build:backend": "npm run build --prefix packages/backend",
+        "build:frontend": "npm run build --prefix packages/frontend",
+        "preview": "concurrently npm:preview:*",
+        "preview:backend": "npm run start --prefix packages/backend",
+        "preview:frontend": "npm run preview --prefix packages/frontend",
+        "clean": "find . \\( -name node_modules -o -name dist \\) -exec rm -r {} \\;"
     },
     "devDependencies": {
         "concurrently": "^8.2.1"

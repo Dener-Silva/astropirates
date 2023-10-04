@@ -77,6 +77,7 @@ export function runWebSocketServer(wss: WebSocketServer) {
             if (ponged.delete(ws)) {
                 ws.ping();
             } else {
+                console.log('Terminating connection because it did not respond to ping');
                 ws.terminate();
             }
         }

@@ -7,7 +7,15 @@ export default defineConfig({
         port: 3000
     },
     build: {
-        outDir: 'dist'
+        outDir: 'dist',
+        sourcemap: true,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'pixi-js': ['pixi.js'],
+                }
+            }
+        }
     },
     define: {
         'process.env': process.env

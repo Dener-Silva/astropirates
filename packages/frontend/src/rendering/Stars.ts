@@ -1,6 +1,7 @@
 import vertexSrc from './shaders/stars.vert';
 import fragmentSrc from './shaders/stars.frag';
 import { Container, Geometry, Mesh, Shader, Texture } from 'pixi.js';
+import starUrl from './star.png'
 
 export class Stars {
     // TODO: Stars is the black sheep of the renderers. It's not really a component
@@ -53,7 +54,7 @@ export class Stars {
         const uniforms = {
             aspectRatio: 4 / 3,
             playerPosition: this.playerPosition,
-            uSampler: Texture.from('/assets/star.png')
+            uSampler: Texture.from(starUrl)
         }
         const shader = Shader.from(vertexSrc, fragmentSrc, uniforms);
         const mesh = new Mesh(geometry, shader as any);

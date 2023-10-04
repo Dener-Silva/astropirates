@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview --port=3000",
+    "preview": "vite preview --port=3000 --host",
     "test": "jest"
   },
   "keywords": [],
