@@ -1,5 +1,5 @@
 import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, gameUpdateType, welcomeType, newPlayerType } from "dtos";
-import { WebSocketServer } from "ws";
+import { WebSocketServer, WebSocket } from "ws";
 import { GameServer } from "./GameServer.js";
 import { delta, tickrate } from './delta.js';
 import { SweepAndPrune } from "./collision/SweepAndPrune.js";
@@ -9,6 +9,7 @@ import { Type } from "avro-js";
 export function runWebSocketServer(wss: WebSocketServer) {
 
     const gameServer = new GameServer(new SweepAndPrune());
+    const ponged = new WeakSet<WebSocket>();
 
     function broadcast<T>(type: Type<T>, message: T) {
         const buffer = type.toBuffer(message);
@@ -18,6 +19,7 @@ export function runWebSocketServer(wss: WebSocketServer) {
     }
 
     wss.on('connection', (ws) => {
+        ponged.add(ws);
         const id = newId();
         ws.send(welcomeType.toBuffer({ topic: ServerTopic.Welcome, tickrate, id, players: gameServer.players }))
 
@@ -56,6 +58,8 @@ export function runWebSocketServer(wss: WebSocketServer) {
         ws.on('close', () => {
             gameServer.onPlayerLoggedOut(id);
         });
+
+        ws.on('pong', () => ponged.add(ws));
     });
 
     // Using setImmediate so the tickrate can be read from the dotenv file.
@@ -66,4 +70,15 @@ export function runWebSocketServer(wss: WebSocketServer) {
             gameServer.cleanup();
         }, delta)
     )
+
+    // Heartbeat
+    setInterval(() => {
+        for (const ws of wss.clients) {
+            if (ponged.delete(ws)) {
+                ws.ping();
+            } else {
+                ws.terminate();
+            }
+        }
+    }, 30000);
 }
