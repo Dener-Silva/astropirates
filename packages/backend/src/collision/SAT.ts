@@ -5,6 +5,11 @@ import { normal, overlaps } from "./VectorFunctions.js";
 import { Vector } from "./VectorFunctions.js";
 
 export function polygonVsPolygonSAT(a: Polygon, b: Polygon) {
+    // Needs to test both ways
+    return _polygonVsPolygonSAT(a, b) && _polygonVsPolygonSAT(b, a);
+}
+
+function _polygonVsPolygonSAT(a: Polygon, b: Polygon) {
     for (let i = 0; i < b.points.length; i += 2) {
         const lineSegmentX1 = b.points[i];
         const lineSegmentY1 = b.points[i + 1];

@@ -4,7 +4,8 @@ export default {
   testEnvironment: 'jsdom',
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
-    '^.+\\.(vert|frag|glsl)$': '<rootDir>/test/GLSLTransformer.ts'
+    '^.+\\.(vert|frag|glsl)$': '<rootDir>/test/GLSLTransformer.ts',
+    '^.+\\.(jpg|jpeg|png|gif|webp|svg|ttf|woff|woff2|wav|mp3)$': '<rootDir>/test/FilePathTransformer.ts'
   },
   transform: {
     '^.+\\.tsx?$': [

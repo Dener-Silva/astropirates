@@ -4,9 +4,6 @@ import { Container, Geometry, Mesh, Shader, Texture } from 'pixi.js';
 import starUrl from './star.png'
 
 export class Stars {
-    // TODO: Stars is the black sheep of the renderers. It's not really a component
-    // and should not extend Renderer, but I don't know where to put it. So it
-    // stays in the renderers package for now
 
     private playerPosition = [0, 0]
 

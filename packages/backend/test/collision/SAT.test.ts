@@ -76,6 +76,14 @@ describe('SAT', () => {
             expect(b.collidesWith(a)).toBeFalsy();
         });
 
+        test('should not collide', () => {
+            let a = new Polygon([1, 0, 2, 0]),
+                b = new Polygon([-1, 1, -1, -1]);
+
+            expect(a.collidesWith(b)).toBeFalsy();
+            expect(b.collidesWith(a)).toBeFalsy();
+        });
+
         test('triangles facing outward should not collide', () => {
             let a = new Polygon([0, 1, 0, -1, 1, 0]),
                 b = new Polygon([0, 1, 0, -1, -1, 0]);
