@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import glsl from 'vite-plugin-glsl'
 
 export default defineConfig({
+    base: '/astropirates/',
     plugins: [glsl()],
     server: {
         port: 3000
@@ -17,7 +18,4 @@ export default defineConfig({
             }
         }
     },
-    define: {
-        'process.env': process.env
-    }
 })

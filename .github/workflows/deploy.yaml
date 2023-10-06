@@ -6,12 +6,20 @@ concurrency:
 
 env:
   BUILD_PATH: "." # default value when not using subfolders
-  # ${{ env.VITE_WEBSOCKET_URL }}
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -30,6 +38,8 @@ jobs:
     - name: Run tests
       run: npm test
     - name: Build
+      env:
+        VITE_WEBSOCKET_URL: ${{ vars.VITE_WEBSOCKET_URL }}
       run: npm run build
     - name: Install SSH Key
       uses: shimataro/ssh-key-action@v2.5.1
@@ -40,3 +50,12 @@ jobs:
       run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
     - name: Deploy back-end
       run: rsync -az --delete --no-perms --no-times packages/backend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/astropirates
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: './packages/frontend/dist'
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2
