@@ -5,7 +5,11 @@ import dotenv from 'dotenv';
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'production'}` })
 
 const port = Number(process.env.PORT);
-const server = http.createServer();
+const server = http.createServer(function (_req, res) {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.write(`{ "time": "${new Date().toLocaleString()}"}`);
+    res.end();
+});
 
 // TODO: check origin
 runWebSocketServer(new WebSocketServer({ server }));

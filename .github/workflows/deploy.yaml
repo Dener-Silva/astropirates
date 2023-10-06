@@ -1,0 +1,42 @@
+name: Deploy front-end and back-end
+
+concurrency:
+  group: "deploy"
+  cancel-in-progress: false
+
+env:
+  BUILD_PATH: "." # default value when not using subfolders
+  # ${{ env.VITE_WEBSOCKET_URL }}
+
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: "20.8.0"
+        cache: 'pnpm'
+    - name: Install dependencies
+      run: pnpm install
+    - name: Run tests
+      run: npm test
+    - name: Build
+      run: npm run build
+    - name: Install SSH Key
+      uses: shimataro/ssh-key-action@v2.5.1
+      with:
+        key: ${{ secrets.PRIVATE_SSH_KEY }}
+        known_hosts: unnecessary
+    - name: Adding known hosts
+      run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+    - name: Deploy back-end
+      run: rsync -az --delete --no-perms --no-times packages/backend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/astropirates
