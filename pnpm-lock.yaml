@@ -8,9 +8,18 @@ importers:
 
   .:
     devDependencies:
+      '@types/jest':
+        specifier: ^29.5.5
+        version: 29.5.5
       concurrently:
         specifier: ^8.2.1
         version: 8.2.1
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@20.7.0)
+      vite:
+        specifier: ^4.4.9
+        version: 4.4.9
 
   packages/backend:
     dependencies:
@@ -2982,7 +2991,7 @@ packages:
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
       '@types/jsdom': 20.0.1
-      '@types/node': 20.6.3
+      '@types/node': 20.7.0
       canvas: 2.11.2
       jest-mock: 29.7.0
       jest-util: 29.7.0

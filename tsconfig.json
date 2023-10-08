@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "types": [
+      "vite/client",
+      "jest"
+    ],
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}
