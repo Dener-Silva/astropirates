@@ -85,3 +85,4 @@
         - High score screen
             - Layout
             - Fetch from database
+- Docs (To be expanded)

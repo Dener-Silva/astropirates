@@ -65,11 +65,22 @@ export function sendMessage<T>(type: Type<T>, message: T) {
 export function useIsInGame() {
 
     const [isInGame, setIsInGame] = useState(false);
-    const message = useSubscribeToTopic<NewPlayer>(ServerTopic.NewPlayer);
 
-    if (message?.id && message.id === myId && !isInGame) {
-        setIsInGame(true);
-    }
+    useEffect(() => {
+        const topicListeners = listeners[ServerTopic.NewPlayer];
+        const callback = (newPlayer: NewPlayer) => {
+            if (newPlayer?.id && newPlayer.id === myId && !isInGame) {
+                setIsInGame(true);
+            }
+        }
+        topicListeners.push(callback);
+        return () => {
+            const i = topicListeners.indexOf(callback);
+            if (i >= 0) {
+                topicListeners.splice(i, 1);
+            }
+        }
+    }, []);
 
     return isInGame;
 }
