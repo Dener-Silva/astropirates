@@ -1,57 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8" />
+    <!-- TODO favicon -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AstroPirates</title>
-    <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        canvas {
-            background: radial-gradient(#222, #000);
-            display: block;
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            right: 0;
-            left: 0;
-            margin: auto;
-            z-index: -1;
-        }
-
-        #name-modal {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: lightgray;
-            background: #0008;
-            padding: 15px 50px 50px;
-            border-radius: 40px;
-            box-shadow: 0px 0px 20px black;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-    </style>
 </head>
 
 <body>
-    <div id="name-modal">
-        <h1>Choose Your Name</h1>
-        <form id="name-form" action="">
-            <input type="text" name="nickname" maxlength="15" />
-            <input type="submit" name="go" value="GO" disabled />
-        </form>
-    </div>
     <canvas id="game-canvas"></canvas>
-    <script type="module" src="./src/gameClient.ts"></script>
+    <script type="module" src="./src/GameClient.ts"></script>
+    <div id="root"></div>
+    <script type="module" src="./src/main.tsx"></script>
 </body>
 
 </html>

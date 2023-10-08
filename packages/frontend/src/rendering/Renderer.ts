@@ -1,6 +1,5 @@
 import { Application, Container } from "pixi.js";
 import { Dictionary, GameUpdate, PlayerAttributes, Player, angleLerp, lerp, GameObjectState, Bullet } from "dtos";
-import { serverDelta } from "../delta.js";
 import { ShipGraphics } from "./ShipGraphics.js";
 import { Stars } from "./Stars.js";
 import { BulletGraphics } from "./BulletGraphics.js";
@@ -17,6 +16,7 @@ export class Renderer {
 
     layers: Layers;
     myId: string | undefined = undefined;
+    serverDelta: number = 50;
     playerGraphics: Dictionary<ShipGraphics> = {};
     bulletGraphics: Dictionary<BulletGraphics> = {};
     players: Dictionary<Player> = {};
@@ -43,8 +43,8 @@ export class Renderer {
 
     update() {
 
-        let timeSinceNextTick = Math.min(performance.now() - this.lastServerUpdate, 2 * serverDelta);
-        let interpolationFactor = timeSinceNextTick / serverDelta;
+        let timeSinceNextTick = Math.min(performance.now() - this.lastServerUpdate, 2 * this.serverDelta);
+        let interpolationFactor = timeSinceNextTick / this.serverDelta;
 
         for (const [id, player] of Object.entries(this.players)) {
             const previousPosition = this.previousPlayers[id];
