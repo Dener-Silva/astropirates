@@ -12,14 +12,32 @@ ws.addEventListener("error", console.error);
 let myId: string | undefined = undefined;
 
 const listeners: { [topic: number]: ((message: any) => any)[] } = {};
-for (let key in Object.keys(ServerTopic)) {
+for (let key in ServerTopic) {
     if (!isNaN(Number(key))) {
         listeners[key] = [];
     }
 }
 
+/**
+ * Listen to server messages on the web socket connection.
+ * @param topic Topic of the messages to listen to
+ * @param callback Function to be called upon receiving a message from the server. This function does not infer the TypeScript type of the message.
+ */
 export function addTopicListener<T = any>(topic: ServerTopic, callback: (message: T) => any) {
     listeners[topic].push(callback);
+}
+
+/**
+ * Remove callback from the listeners of the server messages on the web socket connection.
+ * @param topic Topic of the messages the callback was listening to
+ * @param callback Listener to be removed from the list
+ */
+export function removeTopicListener<T = any>(topic: ServerTopic, callback: (message: T) => any) {
+    const topicListeners = listeners[topic];
+    const i = topicListeners.indexOf(callback);
+    if (i >= 0) {
+        topicListeners.splice(i, 1);
+    }
 }
 
 ws.addEventListener("message", ({ data }) => {
@@ -67,18 +85,14 @@ export function useIsInGame() {
     const [isInGame, setIsInGame] = useState(false);
 
     useEffect(() => {
-        const topicListeners = listeners[ServerTopic.NewPlayer];
         const callback = (newPlayer: NewPlayer) => {
             if (newPlayer?.id && newPlayer.id === myId && !isInGame) {
                 setIsInGame(true);
             }
         }
-        topicListeners.push(callback);
+        addTopicListener(ServerTopic.NewPlayer, callback);
         return () => {
-            const i = topicListeners.indexOf(callback);
-            if (i >= 0) {
-                topicListeners.splice(i, 1);
-            }
+            removeTopicListener(ServerTopic.NewPlayer, callback);
         }
     }, []);
 
@@ -94,13 +108,9 @@ export function useSubscribeToTopic<T>(topic: ServerTopic) {
     const [message, setMessage] = useState<T | null>(null)
 
     useEffect(() => {
-        const topicListeners = listeners[topic];
-        topicListeners.push(setMessage);
+        addTopicListener(topic, setMessage);
         return () => {
-            const i = topicListeners.indexOf(setMessage);
-            if (i >= 0) {
-                topicListeners.splice(i, 1);
-            }
+            removeTopicListener(topic, setMessage);
         }
     }, []);
 
