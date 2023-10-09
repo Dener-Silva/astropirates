@@ -1,6 +1,6 @@
 import { Type } from "avro-js";
 import { NeverError, NewPlayer, ServerTopic, Welcome, gameUpdateType, newPlayerType, topicType, welcomeType } from "dtos";
-import _react, { useEffect, useState } from "react";
+import _react, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Buffer } from "buffer";
 
 // Connect to server
@@ -55,8 +55,7 @@ ws.addEventListener("message", ({ data }) => {
             break;
         }
         case (ServerTopic.NicknameAlreadyExists):
-            console.warn(ServerTopic[topic]);
-            // TODO show error on screen
+            listeners[topic].forEach((c) => c(topic));
             break;
         case (ServerTopic.GameUpdate):
             const gameUpdate = gameUpdateType.fromBuffer(buffer);
@@ -97,6 +96,24 @@ export function useIsInGame() {
     }, []);
 
     return isInGame;
+}
+
+/**
+ * Special hook for showing the "Nickname is already taken" warning.
+ */
+export function useNicknameAlreadyExists(): [boolean, Dispatch<SetStateAction<boolean>>] {
+
+    const [alreadyExists, setAlreadyExists] = useState(false);
+
+    const callback = () => setAlreadyExists(true);
+    useEffect(() => {
+        addTopicListener(ServerTopic.NicknameAlreadyExists, callback);
+        return () => {
+            removeTopicListener(ServerTopic.NicknameAlreadyExists, callback);
+        }
+    }, []);
+
+    return [alreadyExists, setAlreadyExists];
 }
 
 /**

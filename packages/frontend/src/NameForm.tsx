@@ -1,6 +1,6 @@
-import { ClientTopic, ServerTopic, SetNickname, setNicknameType } from "dtos";
-import _React, { FormEvent } from "react";
-import { useIsInGame, useSubscribeToTopic, sendMessage } from "./WebSocketClient";
+import { ClientTopic, SetNickname, setNicknameType } from "dtos";
+import _React, { ChangeEvent, FormEvent, useState } from "react";
+import { useIsInGame, sendMessage, useNicknameAlreadyExists } from "./WebSocketClient";
 
 /**
  * "Choose Your Name" Form
@@ -8,7 +8,8 @@ import { useIsInGame, useSubscribeToTopic, sendMessage } from "./WebSocketClient
 export const NameForm = () => {
 
     const isInGame = useIsInGame();
-    const nicknameAlreadyExists = useSubscribeToTopic(ServerTopic.NicknameAlreadyExists);
+    const [valid, setValid] = useState(false);
+    const [alreadyExists, setAlreadyExists] = useNicknameAlreadyExists();
 
     const onSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -21,19 +22,21 @@ export const NameForm = () => {
         sendMessage(setNicknameType, clientMessage);
     }
 
-    // TODO validation
-    // const updateButton = () => {
-    //     nameForm.go.disabled = nameForm.nickname.value?.trim().length < 1;
-    // }
-    // nameForm.nickname.onchange = nameForm.nickname.onkeyup = updateButton;
+    const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setValid(e.target.value.trim().length > 0);
+        setAlreadyExists(false);
+    }
 
     return (
         <div id="name-modal" style={isInGame ? { display: 'none' } : {}}>
-            <h1>Choose Your Name</h1>
             <form id="name-form" action="" onSubmit={onSubmit}>
-                <input type="text" name="nickname" maxLength={15} />
-                <input type="submit" name="go" value="GO" />
+                <label htmlFor="nickname">Choose Your Name</label>
+                <input id="nickname" type="text" name="nickname" onChange={onChange} maxLength={15} />
+                <input type="submit" name="go" value="GO" disabled={!valid} />
             </form>
+            <div className="warning" style={{ visibility: alreadyExists ? 'visible' : 'hidden' }}>
+                Nickname is already taken
+            </div>
         </div>
     )
 }
