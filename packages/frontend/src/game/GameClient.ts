@@ -1,7 +1,7 @@
 import { Application } from "pixi.js";
 import { getInput, onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.js";
-import { Renderer } from "./rendering/Renderer.js";
-import { addTopicListener, sendMessage } from "./WebSocketClient.js";
+import { Renderer } from "./Renderer.js";
+import { addTopicListener, sendMessage } from "../WebSocketClient.js";
 import { GameUpdate, NewPlayer, ServerTopic, Welcome, inputType } from "dtos";
 
 // Initialize rendering (Pixi.JS)

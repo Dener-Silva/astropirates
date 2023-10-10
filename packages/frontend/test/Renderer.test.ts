@@ -1,5 +1,5 @@
 import { Application } from "pixi.js";
-import { Renderer } from "../src/rendering/Renderer.js";
+import { Renderer } from "../src/game/Renderer.js";
 import { GameObjectState, ServerTopic } from "dtos";
 
 test('Should add player in foreground layer', () => {

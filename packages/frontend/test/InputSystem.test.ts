@@ -1,4 +1,4 @@
-import { onMouseDown, onMouseUp, onPointerMove, getInput } from "../src/InputSystem.js";
+import { onMouseDown, onMouseUp, onPointerMove, getInput } from "../src/game/InputSystem.js";
 
 global.window.innerWidth = 200;
 global.window.innerHeight = 200;

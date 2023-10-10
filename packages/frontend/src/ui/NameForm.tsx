@@ -1,6 +1,6 @@
 import { ClientTopic, SetNickname, setNicknameType } from "dtos";
 import _React, { ChangeEvent, FormEvent, useState } from "react";
-import { useIsInGame, sendMessage, useNicknameAlreadyExists } from "./WebSocketClient";
+import { useIsInGame, sendMessage, useNicknameAlreadyExists } from "../WebSocketClient";
 
 /**
  * "Choose Your Name" Form

@@ -1,9 +1,9 @@
 import { Application, Container } from "pixi.js";
-import { Dictionary, GameUpdate, PlayerAttributes, Player, angleLerp, lerp, GameObjectState, Bullet } from "dtos";
-import { ShipGraphics } from "./ShipGraphics.js";
-import { Stars } from "./Stars.js";
-import { BulletGraphics } from "./BulletGraphics.js";
-import { AsteroidBelt } from "./AsteroidBelt.js";
+import { Dictionary, GameUpdate, Player, angleLerp, lerp, GameObjectState, Bullet, PlayerAttributes } from "dtos";
+import { ShipGraphics } from "./rendering/ShipGraphics.js";
+import { Stars } from "./rendering/Stars.js";
+import { BulletGraphics } from "./rendering/BulletGraphics.js";
+import { AsteroidBelt } from "./rendering/AsteroidBelt.js";
 
 interface Layers {
     background: Container;

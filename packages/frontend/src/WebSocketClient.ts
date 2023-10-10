@@ -1,5 +1,5 @@
 import { Type } from "avro-js";
-import { NeverError, NewPlayer, ServerTopic, Welcome, gameUpdateType, newPlayerType, topicType, welcomeType } from "dtos";
+import { NeverError, NewPlayer, ServerTopic, gameUpdateType, newPlayerType, topicType, welcomeType } from "dtos";
 import _react, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Buffer } from "buffer";
 
