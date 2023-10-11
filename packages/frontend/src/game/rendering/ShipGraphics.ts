@@ -13,13 +13,14 @@ export class ShipGraphics extends Container {
         graphics.endFill();
         this.addChild(graphics);
         const text = new Text(nickname, {
-            fontFamily: 'Arial',
-            fontSize: 24,
+            fontFamily: 'Urbanist',
+            fontSize: 48,
             fill: 0xffffff,
             align: 'center',
             strokeThickness: 5,
         });
         text.anchor.set(0.5, 0.5);
+        text.scale.set(0.5, 0.5);
         text.y = -75
         this.addChild(text);
         stage.addChild(this);

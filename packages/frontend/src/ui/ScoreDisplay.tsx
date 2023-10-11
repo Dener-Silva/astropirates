@@ -1,5 +1,5 @@
-import { Dictionary, NewPlayer, ServerTopic, Welcome } from "dtos";
-import _React, { useEffect, useRef } from "react";
+import { ServerTopic, Welcome } from "dtos";
+import _React from "react";
 import { usePlayersNicknames, useScores, useSubscribeToTopic } from "../WebSocketClient";
 
 /**
@@ -35,20 +35,19 @@ export const ScoreDisplay = () => {
     }
 
     return (
-        <table id="score-display">
-            <tbody>
-                {top6.map((r) => (
-                    <tr key={r.id} style={r.isMe ? { fontWeight: 'bold' } : {}}>
-                        <td>#{r.position}</td>
-                        <td>: {r.nickname}</td>
-                        <td>{r.score} points</td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
+        <div id="score-display">
+            <span>Scoreboard</span>
+            <table>
+                <tbody>
+                    {top6.map((r) => (
+                        <tr key={r.id} style={r.isMe ? { fontWeight: 'bold' } : {}}>
+                            <td>#{r.position}</td>
+                            <td>: {r.nickname}</td>
+                            <td>{r.score} points</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     )
 }
-
-/*
-
-*/

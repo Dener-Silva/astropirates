@@ -10,7 +10,8 @@ const gameCanvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 const app = new Application({
     view: gameCanvas,
     resizeTo: gameCanvas,
-    backgroundAlpha: 0
+    backgroundAlpha: 0,
+    antialias: true
 });
 
 const resize = () => {
