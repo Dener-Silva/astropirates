@@ -62,3 +62,11 @@ canvas {
     padding: 10px;
     border-radius: 10px;
 }
+
+#score-display {
+    pointer-events: none;
+    position: fixed;
+    color: white;
+    top: 0;
+    right: 0;
+}

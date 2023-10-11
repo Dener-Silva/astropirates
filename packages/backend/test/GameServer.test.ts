@@ -10,8 +10,8 @@ jest.mock('../src/delta.js', () => ({ delta: 50, tickrate: 20 }));
 test('Should not add two players with the same name, and return false', () => {
     const gameServer = new GameServer(new SweepAndPrune());
 
-    gameServer.addPlayer('0', 'Technocat');
-    const result = gameServer.addPlayer('1', 'Technocat');
+    gameServer.addPlayer('0', 'Technocat', () => { });
+    const result = gameServer.addPlayer('1', 'Technocat', () => { });
 
     expect(result).toBeFalsy();
 });
@@ -19,10 +19,10 @@ test('Should not add two players with the same name, and return false', () => {
 test('Should free the name for use', () => {
     const gameServer = new GameServer(new SweepAndPrune());
 
-    gameServer.addPlayer('0', 'Technocat');
+    gameServer.addPlayer('0', 'Technocat', () => { });
     gameServer.onPlayerLoggedOut('0');
     gameServer.cleanup();
-    const result = gameServer.addPlayer('1', 'Technocat');
+    const result = gameServer.addPlayer('1', 'Technocat', () => { });
 
     expect(result).toBeTruthy();
 });
@@ -41,7 +41,7 @@ test.each([
     const remove = sweepAndPrune.remove = jest.fn();
     const gameServer = new GameServer(sweepAndPrune);
 
-    const player = gameServer.addPlayer('0', 'Technocat');
+    const player = gameServer.addPlayer('0', 'Technocat', () => { });
     expect(player).not.toBeNull();
     player!.state = state;
 
@@ -75,7 +75,7 @@ test("Should add bullet's collider", () => {
     const add = sweepAndPrune.add = jest.fn();
     const gameServer = new GameServer(sweepAndPrune);
 
-    gameServer.addPlayer('0', 'Technocat');
+    gameServer.addPlayer('0', 'Technocat', () => { });
     gameServer.registerInputs('0', {
         topic: ClientTopic.Input,
         angle: 0,
@@ -96,7 +96,7 @@ test("Should ignore dead player's inputs", () => {
     const add = sweepAndPrune.add = jest.fn();
     const gameServer = new GameServer(sweepAndPrune);
 
-    gameServer.addPlayer('0', 'Technocat');
+    gameServer.addPlayer('0', 'Technocat', () => { });
     gameServer.registerInputs('0', {
         topic: ClientTopic.Input,
         angle: 0,
@@ -115,11 +115,11 @@ test("Should ignore dead player's inputs", () => {
 test('Adding player twice should be idempotent', () => {
     const gameServer = new GameServer(new SweepAndPrune());
 
-    const player = gameServer.addPlayer('0', 'Technocat');
+    const player = gameServer.addPlayer('0', 'Technocat', () => { });
     player!.state = GameObjectState.Exploded;
     gameServer.update();
     gameServer.cleanup();
-    const player2 = gameServer.addPlayer('0', 'Technocat');
+    const player2 = gameServer.addPlayer('0', 'Technocat', () => { });
     const result = gameServer.update();
 
     expect(player2).toBeTruthy();
@@ -132,10 +132,10 @@ test('Should update the nickname', () => {
     const gameServer = new GameServer(new SweepAndPrune());
 
     // Simulate actual lifecycle
-    const player = gameServer.addPlayer('0', 'Old Nickname');
+    const player = gameServer.addPlayer('0', 'Old Nickname', () => { });
     player!.state = GameObjectState.Exploded;
     gameServer.update()
-    const player2 = gameServer.addPlayer('0', 'New Nickname');
+    const player2 = gameServer.addPlayer('0', 'New Nickname', () => { });
     const result = gameServer.update();
 
     expect(player2).toBeTruthy();
@@ -149,11 +149,11 @@ test("Should remove dead players's nickname after they log out", () => {
     const remove = sweepAndPrune.remove = jest.fn();
     const gameServer = new GameServer(sweepAndPrune);
 
-    const player = gameServer.addPlayer('0', 'Technocat');
+    const player = gameServer.addPlayer('0', 'Technocat', () => { });
     expect(player).not.toBeNull();
     player!.state = GameObjectState.Exploded;
     gameServer.cleanup();
-    let result = gameServer.addPlayer('0', 'Technocat');
+    let result = gameServer.addPlayer('0', 'Technocat', () => { });
 
     expect(result).not.toBeNull();
     expect(result!.nickname).toEqual('Technocat');

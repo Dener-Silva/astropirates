@@ -23,8 +23,14 @@ export class Player implements ObjectWithCollider {
     ySpeed = 0
     rotation = Math.PI / 2;
     shootTimer = 0;
+    score = 0;
 
-    constructor(public nickname: string, public collider: Polygon) {
+    constructor(
+        public id: string,
+        public nickname: string,
+        public collider: Polygon,
+        public onDestroyed: (byWhom: string) => void
+    ) {
         collider.owner = this;
         // TODO random position. Do not forget to update collider
         this.x = this.y = 0
@@ -62,6 +68,8 @@ export class Player implements ObjectWithCollider {
     onCollision(other: ObjectWithCollider): void {
         if (other instanceof Bullet) {
             if (other.owner !== this) {
+                other.owner.score += 100;
+                this.onDestroyed(other.owner.id);
                 this.state = GameObjectState.Exploded;
             }
             return;

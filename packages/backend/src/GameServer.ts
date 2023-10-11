@@ -12,7 +12,7 @@ export class GameServer {
 
     constructor(private sweepAndPrune: SweepAndPrune) { }
 
-    addPlayer(id: string, nickname: string): Player | null {
+    addPlayer(id: string, nickname: string, onDestroyed: (byWhom: string) => void): Player | null {
         if (Object.values(this.players).some((p) => p.nickname === nickname)) {
             return null;
         }
@@ -21,7 +21,7 @@ export class GameServer {
         }
         const collider = new Polygon([-45, -30, -45, 30, 45, 0]);
         this.sweepAndPrune.add(collider);
-        const player = new Player(nickname, collider);
+        const player = new Player(id, nickname, collider, onDestroyed);
         this.players[id] = player;
         return player;
     }

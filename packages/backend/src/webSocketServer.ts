@@ -1,4 +1,4 @@
-import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, gameUpdateType, welcomeType, newPlayerType } from "dtos";
+import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, gameUpdateType, welcomeType, newPlayerType, destroyedType } from "dtos";
 import { WebSocketServer, WebSocket } from "ws";
 import { GameServer } from "./GameServer.js";
 import { delta, tickrate } from './delta.js';
@@ -31,8 +31,11 @@ export function runWebSocketServer(wss: WebSocketServer) {
                 switch (topic) {
                     case ClientTopic.SetNickname:
                         const message = setNicknameType.fromBuffer(data);
+                        const onDestroyed = (byWhom: string) => {
+                            ws.send(destroyedType.toBuffer({ topic: ServerTopic.Destroyed, byWhom }));
+                        }
                         // Try to add player to the server
-                        const player = gameServer.addPlayer(id, message.nickname);
+                        const player = gameServer.addPlayer(id, message.nickname, onDestroyed);
                         // If player was successfully added, broadcast
                         if (player) {
                             broadcast(newPlayerType, {

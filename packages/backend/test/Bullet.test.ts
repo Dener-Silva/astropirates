@@ -6,7 +6,7 @@ jest.mock('../src/delta.js', () => ({ delta: 50 }));
 jest.mock('../src/collision/colliders/Polygon.js')
 
 test('Should not explode to owner', () => {
-    const player = new Player('Test', new Polygon([]));
+    const player = new Player('0', 'Test', new Polygon([]), () => { });
     const bullet = player.shoot();
 
     bullet.onCollision(player);

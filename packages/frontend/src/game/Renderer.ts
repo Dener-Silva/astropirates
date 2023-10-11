@@ -116,7 +116,7 @@ export class Renderer {
     serverUpdate(gameUpdate: GameUpdate) {
         this.lastServerUpdate = performance.now();
         this.previousPlayers = this.players;
-        this.players = gameUpdate.players;
+        this.players = { ...gameUpdate.players };
         this.previousBullets = this.bullets;
         this.bullets = gameUpdate.bullets;
 

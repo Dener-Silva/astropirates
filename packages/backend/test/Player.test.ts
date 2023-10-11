@@ -7,7 +7,7 @@ jest.mock('../src/delta.js', () => ({ delta: 50 }));
 jest.mock('../src/collision/colliders/Polygon.js')
 
 test('Should rotate correctly', () => {
-    const player = new Player('Test', new Polygon([]));
+    const player = new Player('0', 'Test', new Polygon([]), () => { });
     const input: Input = {
         topic: ClientTopic.Input,
         angle: 0,
@@ -24,8 +24,8 @@ test('Should rotate correctly', () => {
 });
 
 test('Should die to bullet', () => {
-    const player = new Player('Test', new Polygon([]));
-    const player2 = new Player('Test2', new Polygon([]));
+    const player = new Player('0', 'Test', new Polygon([]), () => { });
+    const player2 = new Player('1', 'Test2', new Polygon([]), () => { });
     const bullet = player2.shoot();
 
     player.onCollision(bullet);
@@ -33,8 +33,22 @@ test('Should die to bullet', () => {
     expect(player.state).toBe(GameObjectState.Exploded);
 });
 
+test('Should call onScoreChanged', () => {
+    const onDestroyed1 = jest.fn();
+    const player1 = new Player('0', 'Test1', new Polygon([]), onDestroyed1);
+    const onDestroyed2 = jest.fn();
+    const player2 = new Player('1', 'Test2', new Polygon([]), onDestroyed2);
+    const bullet = player2.shoot();
+
+    player1.onCollision(bullet);
+
+    expect(onDestroyed1).toHaveBeenCalledTimes(1);
+    expect(onDestroyed1).toHaveBeenCalledWith('1');
+    expect(onDestroyed2).not.toHaveBeenCalled();
+});
+
 test('Should not die to own bullet', () => {
-    const player = new Player('Test', new Polygon([]));
+    const player = new Player('0', 'Test', new Polygon([]), () => { });
     const bullet = player.shoot();
 
     player.onCollision(bullet);
@@ -43,7 +57,7 @@ test('Should not die to own bullet', () => {
 });
 
 test('Should add own speed to bullet speed', () => {
-    const player = new Player('Test', new Polygon([]));
+    const player = new Player('0', 'Test', new Polygon([]), () => { });
     player.ySpeed = 10;
     const bullet = player.shoot();
 
@@ -56,7 +70,7 @@ test.each([
     [0, 1600, Math.PI / 2],
     [0, -1600, -Math.PI / 2],
 ])('Limit distance without killing the speed: x:%f, y:%f, angle:%f', (x, y, angle) => {
-    const player = new Player('Test', new Polygon([]));
+    const player = new Player('0', 'Test', new Polygon([]), () => { });
     player.x = x;
     player.y = y;
     player.rotation = angle;

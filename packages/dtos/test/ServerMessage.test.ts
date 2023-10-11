@@ -1,4 +1,4 @@
-import { GameObjectState, GameUpdate, NewPlayer, ServerTopic, Welcome, gameUpdateType, newPlayerType, welcomeType } from "../src/ServerMessage.js";
+import { GameObjectState, GameUpdate, NewPlayer, ServerTopic, Welcome, gameUpdateType, newPlayerType, destroyedType, welcomeType, Destroyed } from "../src/ServerMessage.js";
 import { toBeDeepCloseTo } from 'jest-matcher-deep-close-to';
 expect.extend({ toBeDeepCloseTo });
 
@@ -23,8 +23,8 @@ test('Compare before and after serialization (GameUpdate)', () => {
     const message: GameUpdate = {
         topic: ServerTopic.GameUpdate,
         players: {
-            0: { state: GameObjectState.Active, x: 12.3, y: 23.4, rotation: Math.PI },
-            1: { state: GameObjectState.Active, x: 34.5, y: 45.6, rotation: -Math.PI },
+            0: { state: GameObjectState.Active, x: 12.3, y: 23.4, rotation: Math.PI, score: 100 },
+            1: { state: GameObjectState.Active, x: 34.5, y: 45.6, rotation: -Math.PI, score: 200 },
         },
         bullets: {
             2: { state: GameObjectState.Active, x: 56.7, y: 67.8 },
@@ -47,6 +47,18 @@ test('Compare before and after serialization (NewPlayer)', () => {
 
     const buf = newPlayerType.toBuffer(message);
     const result = newPlayerType.fromBuffer(buf);
+
+    expect(result).toEqual(message);
+});
+
+test('Compare before and after serialization (Destroyed)', () => {
+    const message: Destroyed = {
+        topic: ServerTopic.Destroyed,
+        byWhom: '0'
+    }
+
+    const buf = destroyedType.toBuffer(message);
+    const result = destroyedType.fromBuffer(buf);
 
     expect(result).toEqual(message);
 });

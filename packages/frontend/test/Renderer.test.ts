@@ -35,7 +35,7 @@ test.each([
     const playerGraphics = renderer.playerGraphics['0'];
     renderer.serverUpdate({
         topic: ServerTopic.GameUpdate,
-        players: { 0: { x: 0, y: 0, rotation: 0, state } },
+        players: { 0: { x: 0, y: 0, rotation: 0, state, score: 0 } },
         bullets: {}
     });
 

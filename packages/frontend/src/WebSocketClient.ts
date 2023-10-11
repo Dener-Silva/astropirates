@@ -1,6 +1,6 @@
 import { Type } from "avro-js";
-import { NeverError, NewPlayer, ServerTopic, gameUpdateType, newPlayerType, topicType, welcomeType } from "dtos";
-import _react, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { GameObjectState, GameUpdate, NeverError, NewPlayer, ServerTopic, gameUpdateType, newPlayerType, destroyedType, topicType, welcomeType, Dictionary, PlayerAttributes, Welcome } from "dtos";
+import _react, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Buffer } from "buffer";
 
 // Connect to server
@@ -61,6 +61,10 @@ ws.addEventListener("message", ({ data }) => {
             const gameUpdate = gameUpdateType.fromBuffer(buffer);
             listeners[topic].forEach((c) => c(gameUpdate));
             break;
+        case (ServerTopic.Destroyed):
+            const destroyed = destroyedType.fromBuffer(buffer);
+            listeners[topic].forEach((c) => c(destroyed));
+            break;
         default:
             throw new NeverError(topic);
     }
@@ -114,6 +118,83 @@ export function useNicknameAlreadyExists(): [boolean, Dispatch<SetStateAction<bo
     }, []);
 
     return [alreadyExists, setAlreadyExists];
+}
+
+/**
+ * Special hook for listing player names
+ */
+export function usePlayersNicknames() {
+
+    // useRef is needed to persist the nicknames and avoid re-rendering every tick
+    const nicknamesRef = useRef<Dictionary<PlayerAttributes>>({});
+    // useState is needed to re-render when a player logs in or logs out
+    const [nicknames, setNicknames] = useState(nicknamesRef.current);
+
+    const welcomeCallback = (welcome: Welcome) => {
+        Object.assign(nicknamesRef.current, welcome.players);
+        setNicknames(nicknamesRef.current);
+    }
+    const newPlayerCallback = (newPlayer: NewPlayer) => {
+        nicknamesRef.current[newPlayer.id] = newPlayer.player;
+        setNicknames(nicknamesRef.current);
+    }
+    const gameUpdateCallback = (gameUpdate: GameUpdate) => {
+        const toBeRemoved = Object.entries(gameUpdate.players)
+            .filter(([_, player]) => player.state >= GameObjectState.ToBeRemoved)
+            .map(([id]) => id);
+        if (toBeRemoved.length) {
+            toBeRemoved.forEach((id) => delete nicknamesRef.current[id]);
+            setNicknames(nicknamesRef.current);
+        }
+    }
+    useEffect(() => {
+        addTopicListener(ServerTopic.Welcome, welcomeCallback);
+        addTopicListener(ServerTopic.NewPlayer, newPlayerCallback);
+        addTopicListener(ServerTopic.GameUpdate, gameUpdateCallback);
+        return () => {
+            removeTopicListener(ServerTopic.Welcome, welcomeCallback);
+            removeTopicListener(ServerTopic.NewPlayer, newPlayerCallback);
+            removeTopicListener(ServerTopic.GameUpdate, gameUpdateCallback);
+        }
+    }, []);
+
+    return nicknames;
+}
+
+/**
+ * Special hook for listening to changes on the scoreboard 
+ * (e.g. logged out or exploded).
+ */
+export function useScores() {
+
+    // useRef is needed to persist the scores and avoid re-rendering every tick
+    const scoresRef = useRef<Dictionary<{ score: number }>>({});
+    // useState is needed to re-render when scores actually change
+    const [scores, setScores] = useState(scoresRef.current);
+
+    const callback = (gameUpdate: GameUpdate) => {
+        // Update if there are any changes in scores
+        if (Object.keys(gameUpdate.players).length !== Object.keys(scoresRef.current).length) {
+            scoresRef.current = gameUpdate.players;
+            setScores(gameUpdate.players);
+            return;
+        }
+        for (const [id, player] of Object.entries(gameUpdate.players)) {
+            if (scoresRef.current[id]?.score !== player.score) {
+                scoresRef.current = gameUpdate.players;
+                setScores(gameUpdate.players);
+                return;
+            }
+        }
+    }
+    useEffect(() => {
+        addTopicListener(ServerTopic.GameUpdate, callback);
+        return () => {
+            removeTopicListener(ServerTopic.GameUpdate, callback);
+        }
+    }, []);
+
+    return scores;
 }
 
 /**

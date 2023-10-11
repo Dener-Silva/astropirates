@@ -4,7 +4,8 @@ export enum ServerTopic {
     Welcome,
     NicknameAlreadyExists,
     NewPlayer,
-    GameUpdate
+    GameUpdate,
+    Destroyed,
 }
 
 export type PlayerAttributes = { nickname: string }
@@ -48,7 +49,7 @@ export enum GameObjectState {
     Offline,
     Exploded
 }
-export type Player = { state: GameObjectState, x: number, y: number, rotation: number }
+export type Player = { state: GameObjectState, x: number, y: number, rotation: number, score: number }
 export type Bullet = { state: GameObjectState, x: number, y: number }
 export type Dictionary<T> = { [id: string]: T }
 export type GameUpdate = {
@@ -72,7 +73,8 @@ export const gameUpdateType = avro.parse<GameUpdate>({
                         { name: "state", type: "int" },
                         { name: "x", type: "float" },
                         { name: "y", type: "float" },
-                        { name: "rotation", type: "float" }
+                        { name: "rotation", type: "float" },
+                        { name: "score", type: "int" },
                     ]
                 }
             }
@@ -110,3 +112,16 @@ export const newPlayerType = avro.parse<NewPlayer>({
     ]
 });
 
+export type Destroyed = {
+    topic: ServerTopic.Destroyed
+    byWhom: string
+}
+
+export const destroyedType = avro.parse<Destroyed>({
+    type: "record",
+    name: "ScoreUpdate",
+    fields: [
+        { name: "topic", type: "int" },
+        { name: "byWhom", type: "string" },
+    ]
+});
