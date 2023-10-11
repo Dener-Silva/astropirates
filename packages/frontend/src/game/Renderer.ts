@@ -4,12 +4,15 @@ import { ShipGraphics } from "./rendering/ShipGraphics.js";
 import { Stars } from "./rendering/Stars.js";
 import { BulletGraphics } from "./rendering/BulletGraphics.js";
 import { AsteroidBelt } from "./rendering/AsteroidBelt.js";
+import { Emitter, EmitterConfigV3 } from "@pixi/particle-emitter";
+import PlayerEmitter from "./rendering/emitters/PlayerEmitter.js"
+import BulletEmitter from "./rendering/emitters/BulletEmitter.js";
 
 interface Layers {
     background: Container;
     foreground: Container;
     player: Container;
-    ui: Container;
+    explosions: Container;
 }
 
 export class Renderer {
@@ -33,7 +36,7 @@ export class Renderer {
             background: new Container(),
             foreground: new Container(),
             player: new Container(),
-            ui: new Container()
+            explosions: new Container(),
         }
 
         app.stage.addChild(...Object.values(this.layers));
@@ -113,6 +116,12 @@ export class Renderer {
         delete this.previousBullets[id];
     }
 
+    private emitParticles(point: { x: number, y: number }, config: EmitterConfigV3) {
+        const emitter = new Emitter(this.layers.explosions, config);
+        emitter.spawnPos.set(point.x, point.y);
+        emitter.playOnceAndDestroy();
+    }
+
     serverUpdate(gameUpdate: GameUpdate) {
         this.lastServerUpdate = performance.now();
         this.previousPlayers = this.players;
@@ -123,21 +132,21 @@ export class Renderer {
         // Add and delete game objects
         for (const [id, player] of Object.entries(this.players)) {
             if (player.state >= GameObjectState.ToBeRemoved) {
+                if (player.state === GameObjectState.Exploded) {
+                    this.emitParticles(player, PlayerEmitter);
+                }
                 // Remove exploded/offline players
                 this.removePlayer(id);
-                if (player.state === GameObjectState.Exploded) {
-                    // TODO explode animation
-                }
             }
             // Player graphics are added on the event "NewPlayer".
         }
         for (const [id, bullet] of Object.entries(this.bullets)) {
             if (bullet.state >= GameObjectState.ToBeRemoved) {
+                if (bullet.state === GameObjectState.Exploded) {
+                    this.emitParticles(bullet, BulletEmitter);
+                }
                 // Remove expired/exploded bullets
                 this.removeBullet(id);
-                if (bullet.state === GameObjectState.Exploded) {
-                    // TODO explode animation
-                }
             } else {
                 // Add new bullets
                 let bulletGraphics = this.bulletGraphics[id];
