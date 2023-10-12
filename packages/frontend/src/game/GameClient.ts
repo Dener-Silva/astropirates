@@ -1,5 +1,5 @@
 import { Application } from "pixi.js";
-import { getInput, onMouseDown, onMouseUp, onPointerMove } from "./InputSystem.js";
+import { InputSystem } from "./InputSystem.js";
 import { Renderer } from "./Renderer.js";
 import { addTopicListener, sendMessage } from "../WebSocketClient.js";
 import { GameUpdate, NewPlayer, ServerTopic, Welcome, inputType } from "dtos";
@@ -42,11 +42,12 @@ app.ticker.add((_delta) => {
 });
 
 // Subscribe to input events
-document.addEventListener('pointermove', onPointerMove);
-document.addEventListener('mousedown', onMouseDown);
-document.addEventListener('mouseup', onMouseUp);
-document.addEventListener('keydown', (e) => e.key === ' ' && onMouseDown());
-document.addEventListener('keyup', (e) => e.key === ' ' && onMouseUp());
+const inputSystem = new InputSystem();
+document.addEventListener('pointermove', (e) => inputSystem.onPointerMove(e));
+document.addEventListener('mousedown', () => inputSystem.onMouseDown());
+document.addEventListener('mouseup', () => inputSystem.onMouseUp());
+document.addEventListener('keydown', (e) => e.key === ' ' && inputSystem.onMouseDown());
+document.addEventListener('keyup', (e) => e.key === ' ' && inputSystem.onMouseUp());
 
 // Subscribe to WebSocket messages
 let myId: string | undefined;
@@ -64,7 +65,7 @@ addTopicListener(ServerTopic.NewPlayer, (newPlayer: NewPlayer) => {
 
 addTopicListener(ServerTopic.GameUpdate, (gameUpdate: GameUpdate) => {
     renderer.serverUpdate(gameUpdate);
-    if (myId && gameUpdate.players[myId]) {
-        sendMessage(inputType, getInput());
+    if (myId && gameUpdate.players[myId] && inputSystem.inputChanged) {
+        sendMessage(inputType, inputSystem.getInput());
     }
 });
