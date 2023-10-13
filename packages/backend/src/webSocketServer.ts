@@ -21,7 +21,22 @@ export function runWebSocketServer(wss: WebSocketServer) {
     wss.on('connection', (ws) => {
         ponged.add(ws);
         const id = newId();
-        ws.send(welcomeType.toBuffer({ topic: ServerTopic.Welcome, tickrate, id, players: gameServer.players }))
+        const sendWelcome = () => ws.send(welcomeType.toBuffer({
+            topic: ServerTopic.Welcome,
+            tickrate,
+            id,
+            players: gameServer.players
+        }));
+        // Hack: Delay first message on dev environment
+        // TODO: Fix race condition where the client receives the "welcome" message before all
+        // React components are mounted.
+        // Suggestion A: Only create the WebSocket connection after all React components are mounted
+        // Suggestion B: Create a "Hello" ClientTopic to notify the server when the client is ready
+        if (process.env.NODE_ENV === 'development') {
+            setTimeout(sendWelcome, 300);
+        } else {
+            sendWelcome();
+        }
 
         ws.on('error', console.error);
 
