@@ -7,7 +7,6 @@ import { useIsInGame, sendMessage, useNicknameAlreadyExists } from "../WebSocket
  */
 export const NameForm = () => {
 
-    const isInGame = useIsInGame();
     const [valid, setValid] = useState(false);
     const [alreadyExists, setAlreadyExists] = useNicknameAlreadyExists();
 
@@ -28,7 +27,7 @@ export const NameForm = () => {
     }
 
     return (
-        <div id="name-modal" style={isInGame ? { display: 'none' } : {}}>
+        <div id="name-modal">
             <form id="name-form" action="" onSubmit={onSubmit}>
                 <label htmlFor="nickname">Choose Your Name</label>
                 <input id="nickname" type="text" name="nickname" onChange={onChange} maxLength={15} />

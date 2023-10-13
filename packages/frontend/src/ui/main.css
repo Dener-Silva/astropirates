@@ -1,3 +1,12 @@
+@font-face {
+    font-family: "Hershey Roman Duplex";
+    src: url("/src/assets/Hershey_Roman_Duplex.ttf") format("truetype");
+}
+
+:root {
+    --game-width: calc(100vh * 4 / 3);
+}
+
 body {
     margin: 0;
     height: 100vh;
@@ -22,12 +31,43 @@ canvas {
 }
 
 #root {
-    width: calc(100vh * 4 / 3 + 860px);
+    width: calc(var(--game-width) + 860px);
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#start-screen {
+    display: flex;
+    gap: 20px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     position: relative;
+}
+
+h1,
+h2 {
+    margin: 0;
+}
+
+h1 {
+    font-size: 34pt;
+    font-family: 'Hershey Roman Duplex', sans-serif;
+}
+
+#title {
+    font-size: 46pt;
+}
+
+a {
+    color: white;
+    font-weight: bold;
+}
+
+a:visited {
+    color: #c9acff;
 }
 
 #name-modal {
@@ -63,18 +103,20 @@ canvas {
     grid-area: i;
 }
 
-input {
+input,
+button {
     font-family: 'Urbanist', sans-serif;
     color: white;
     font-size: large;
-    background-color: transparent;
+    background-color: black;
     padding: 5px 10px;
     border: 1px solid white;
     border-radius: 5px;
     box-shadow: 0px 0px 10px white;
 }
 
-input:disabled {
+input:disabled,
+button:disabled {
     color: gray;
     border: 1px solid gray;
     box-shadow: none;
@@ -102,4 +144,71 @@ input:disabled {
 
 #score-display>span {
     font-size: x-large;
+}
+
+#about-modal-backdrop {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+#about-modal {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid white;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px white inset, 0px 0px 10px white;
+    background: black;
+    overflow: hidden;
+}
+
+#about-modal-content {
+    max-width: max-content;
+    min-width: max-content;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 30px 30px;
+    font-size: large;
+}
+
+@keyframes open {
+    0% {
+        max-width: 0;
+        max-height: 0;
+    }
+
+    50% {
+        max-width: var(--game-width);
+        max-height: 20px;
+    }
+
+    100% {
+        max-width: var(--game-width);
+        max-height: var(--game-width);
+    }
+}
+
+@keyframes close {
+    0% {
+        max-width: var(--game-width);
+        max-height: var(--game-width);
+    }
+
+    50% {
+        max-width: var(--game-width);
+        max-height: 20px;
+    }
+
+    100% {
+        max-width: 0;
+        max-height: 0;
+    }
 }
