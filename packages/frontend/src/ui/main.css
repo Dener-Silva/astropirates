@@ -1,6 +1,6 @@
 @font-face {
     font-family: "Hershey Roman Duplex";
-    src: url("/src/assets/Hershey_Roman_Duplex.ttf") format("truetype");
+    src: url("/Hershey_Roman_Duplex.ttf") format("truetype");
 }
 
 :root {

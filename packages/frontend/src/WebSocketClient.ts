@@ -9,8 +9,6 @@ const ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
 ws.binaryType = 'arraybuffer';
 ws.addEventListener("error", console.error);
 
-let myId: string | undefined = undefined;
-
 const listeners: { [topic: number]: ((message: any) => any)[] } = {};
 for (let key in ServerTopic) {
     if (!isNaN(Number(key))) {
@@ -46,7 +44,6 @@ ws.addEventListener("message", ({ data }) => {
     switch (topic) {
         case (ServerTopic.Welcome):
             const welcomeMessage = welcomeType.fromBuffer(buffer);
-            myId = welcomeMessage.id;
             listeners[topic].forEach((c) => c(welcomeMessage));
             break;
         case (ServerTopic.NewPlayer): {
@@ -85,17 +82,25 @@ export function sendMessage<T>(type: Type<T>, message: T) {
  */
 export function useIsInGame() {
 
+    // useRef is needed to persist the id
+    const myIdRef = useRef<string | null>(null);
+    // useState is needed to re-render
     const [isInGame, setIsInGame] = useState(false);
 
-    useEffect(() => {
-        const callback = (newPlayer: NewPlayer) => {
-            if (newPlayer?.id && newPlayer.id === myId && !isInGame) {
-                setIsInGame(true);
-            }
+    const welcomeCallback = (welcome: Welcome) => {
+        myIdRef.current = welcome.id;
+    }
+    const newPlayerCallback = (newPlayer: NewPlayer) => {
+        if (newPlayer.id === myIdRef.current) {
+            setIsInGame(true);
         }
-        addTopicListener(ServerTopic.NewPlayer, callback);
+    }
+    useEffect(() => {
+        addTopicListener(ServerTopic.Welcome, welcomeCallback);
+        addTopicListener(ServerTopic.NewPlayer, newPlayerCallback);
         return () => {
-            removeTopicListener(ServerTopic.NewPlayer, callback);
+            removeTopicListener(ServerTopic.Welcome, welcomeCallback);
+            removeTopicListener(ServerTopic.NewPlayer, newPlayerCallback);
         }
     }, []);
 
