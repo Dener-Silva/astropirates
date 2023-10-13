@@ -2,24 +2,41 @@ import { useState } from "react"
 
 export const About = () => {
 
-    const openAnimation = "open 1000ms forwards";
-    const closeAnimation = "close 1000ms forwards";
-
     const [display, setDisplay] = useState("none");
     const [animation, setAnimation] = useState("");
+    // Enable scroll after the animation finishes
+    const [overflow, setOverflow] = useState("hidden");
+    // align-items: center doesn't work with overflow: auto
+    // We need to set it to baseline for scrolling to work properly
+    const [alignItems, setAlignItems] = useState("center");
+
+    function open() {
+        setDisplay("flex");
+        setAnimation("open 1000ms forwards");
+        setOverflow("hidden");
+        setAlignItems("center");
+    }
+
+    function close() {
+        setAnimation("close 1000ms forwards");
+        setOverflow("hidden");
+        setAlignItems("center");
+    }
 
     return (
         <>
-            <button onClick={() => { setDisplay(""), setAnimation(openAnimation) }}>About This Game</button>
-            <div id="about-modal-backdrop" style={{ display }} onClick={() => setAnimation(closeAnimation)}>
+            <button onClick={open}>About This Game</button>
+            <div id="about-modal-backdrop" style={{ display }} onClick={close}>
                 <div
                     id="about-modal"
-                    style={{ animation }}
+                    style={{ animation, overflow, alignItems }}
                     onClick={(e) => e.stopPropagation()}
                     onAnimationEnd={(e) => {
                         if (e.animationName === "close") {
-                            setDisplay("none")
+                            setDisplay("none");
                         }
+                        setOverflow("auto");
+                        setAlignItems("baseline");
                     }}>
                     <div id="about-modal-content">
                         <h1>About</h1>
@@ -45,7 +62,7 @@ export const About = () => {
                                 <li>Automated deployment via <a href="https://github.com/features/actions">GitHub Actions</a></li>
                             </ul>
                         </div>
-                        <button onClick={() => setAnimation(closeAnimation)}>Close</button>
+                        <button onClick={close}>Close</button>
                     </div>
                 </div>
             </div>

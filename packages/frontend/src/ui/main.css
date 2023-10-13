@@ -4,7 +4,7 @@
 }
 
 :root {
-    --game-width: calc(100vh * 4 / 3);
+    --about-modal-width: min(80vw, 880px);
 }
 
 body {
@@ -31,11 +31,12 @@ canvas {
 }
 
 #root {
-    width: calc(var(--game-width) + 860px);
+    width: calc(100vh * 4 / 3 + 860px);
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
 }
 
 #start-screen {
@@ -156,20 +157,15 @@ button:disabled {
 }
 
 #about-modal {
-    position: fixed;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: baseline;
     border: 1px solid white;
     border-radius: 10px;
     box-shadow: 0px 0px 10px white inset, 0px 0px 10px white;
     background: black;
-    overflow: hidden;
 }
 
 #about-modal-content {
-    max-width: max-content;
-    min-width: max-content;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -186,24 +182,24 @@ button:disabled {
     }
 
     50% {
-        max-width: var(--game-width);
+        max-width: var(--about-modal-width);
         max-height: 20px;
     }
 
     100% {
-        max-width: var(--game-width);
-        max-height: var(--game-width);
+        max-width: var(--about-modal-width);
+        max-height: 100%;
     }
 }
 
 @keyframes close {
     0% {
-        max-width: var(--game-width);
-        max-height: var(--game-width);
+        max-width: var(--about-modal-width);
+        max-height: 100%;
     }
 
     50% {
-        max-width: var(--game-width);
+        max-width: var(--about-modal-width);
         max-height: 20px;
     }
 
