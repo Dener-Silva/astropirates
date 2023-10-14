@@ -14,7 +14,7 @@
             - Warps
 			- Shields
             - Names - OK
-            - Scoreboard
+            - Scoreboard - OK
     		- Send only what the player can see?
 		- Full update on packet loss?
 	- Main game loop
@@ -33,8 +33,8 @@
 			- Player/bullet - OK
 			- Player/limit - OK
 			- Shield/bullet
-		- Implement Scoreboard
-		- Respawn invencibility
+		- Implement Scoreboard - OK
+		- Respawn invencibility - OK
 	- Test screen to see server simulation in real time
 	- Performance information screen
 - Front end
@@ -44,16 +44,16 @@
 		- Bullet - OK
 		- Asteroids belt - OK
 		- CRT shader?
-	- Input
+	- Input - OK
         - Input to console.log - OK
 		- Move - OK
 		- Shoot - OK
-	- Networking
+	- Networking - OK
 		- Store user input queue - OK
 		- Send user input - OK
 		- Debounce input - OK
 		- Send user names - OK
-		- Receive and store frame data / Deserialization
+		- Receive and store frame data / Deserialization - OK
             - Object pool?
 			- Create - OK
 				- Players - OK
@@ -69,18 +69,18 @@
 		- Move - OK
 			- Players - OK
 			- Bullets - OK
-		- Implement Scoreboard
-		- Respawn invencibility animation
+		- Implement Scoreboard - OK
+		- Respawn invencibility animation - OK
 	- Rendering loop - OK
 		- interpolation - OK
 		- Update each renderer's position - OK
 			- Players - OK
 			- Bullets - OK
-	- Explosion effects
-		- Players
-		- Bullets
+	- Explosion effects - OK
+		- Players - OK
+		- Bullets - OK
     - UI
-		- Install React?
+		- Install React - OK
         - Name choosing screen - OK
         - High score screen
             - Layout

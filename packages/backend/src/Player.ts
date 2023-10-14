@@ -16,12 +16,13 @@ const shootCoolDown = 200;
 
 export class Player implements ObjectWithCollider {
 
-    state = GameObjectState.Active;
+    state = GameObjectState.Invulnerable;
     x: number
     y: number
     xSpeed = 0
     ySpeed = 0
     rotation = Math.PI / 2;
+    invulnerableTimer = 3000;
     shootTimer = 0;
     score = 0;
 
@@ -37,7 +38,11 @@ export class Player implements ObjectWithCollider {
     }
 
     update() {
-        this.shootTimer -= delta
+        this.shootTimer -= delta;
+        this.invulnerableTimer -= delta;
+        if (this.state === GameObjectState.Invulnerable && this.invulnerableTimer <= 0) {
+            this.state = GameObjectState.Active;
+        }
     }
 
     move(input: Input) {
@@ -67,7 +72,7 @@ export class Player implements ObjectWithCollider {
 
     onCollision(other: ObjectWithCollider): void {
         if (other instanceof Bullet) {
-            if (other.owner !== this) {
+            if (this.state !== GameObjectState.Invulnerable && other.owner !== this) {
                 other.owner.score += 100;
                 this.onDestroyed(other.owner.id);
                 this.state = GameObjectState.Exploded;

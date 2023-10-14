@@ -46,7 +46,8 @@ export class Renderer {
 
     update() {
 
-        let timeSinceNextTick = Math.min(performance.now() - this.lastServerUpdate, 2 * this.serverDelta);
+        const now = performance.now();
+        let timeSinceNextTick = Math.min(now - this.lastServerUpdate, 2 * this.serverDelta);
         let interpolationFactor = timeSinceNextTick / this.serverDelta;
 
         for (const [id, player] of Object.entries(this.players)) {
@@ -64,6 +65,13 @@ export class Renderer {
                 ship.x = player.x;
                 ship.y = player.y;
                 ship.graphics.rotation = player.rotation;
+            }
+
+            // Blinking animation if player is invulnerable
+            if (player.state === GameObjectState.Invulnerable) {
+                ship.graphics.alpha = now % 300 < 200 ? 0.5 : 1;
+            } else if (ship.graphics.alpha !== 1) {
+                ship.graphics.alpha = 1;
             }
 
             // Move camera to follow the player.

@@ -2,6 +2,7 @@ import { ClientTopic, GameObjectState, Input } from "dtos";
 import { Player } from "../src/Player.js";
 import { Polygon } from "../src/collision/colliders/Polygon.js";
 import { bulletSpeed } from "../src/Bullet.js";
+import { delta } from "../src/delta.js";
 
 jest.mock('../src/delta.js', () => ({ delta: 50 }));
 jest.mock('../src/collision/colliders/Polygon.js')
@@ -25,7 +26,9 @@ test('Should rotate correctly', () => {
 
 test('Should die to bullet', () => {
     const player = new Player('0', 'Test', new Polygon([]), () => { });
+    player.state = GameObjectState.Active;
     const player2 = new Player('1', 'Test2', new Polygon([]), () => { });
+    player2.state = GameObjectState.Active;
     const bullet = player2.shoot();
 
     player.onCollision(bullet);
@@ -36,8 +39,10 @@ test('Should die to bullet', () => {
 test('Should call onScoreChanged', () => {
     const onDestroyed1 = jest.fn();
     const player1 = new Player('0', 'Test1', new Polygon([]), onDestroyed1);
+    player1.state = GameObjectState.Active;
     const onDestroyed2 = jest.fn();
     const player2 = new Player('1', 'Test2', new Polygon([]), onDestroyed2);
+    player2.state = GameObjectState.Active;
     const bullet = player2.shoot();
 
     player1.onCollision(bullet);
@@ -49,6 +54,7 @@ test('Should call onScoreChanged', () => {
 
 test('Should not die to own bullet', () => {
     const player = new Player('0', 'Test', new Polygon([]), () => { });
+    player.state = GameObjectState.Active;
     const bullet = player.shoot();
 
     player.onCollision(bullet);
@@ -85,4 +91,27 @@ test.each([
     expect(player.y).toBeCloseTo(y);
     expect(player.rotation).toBeCloseTo(angle);
     expect(Math.hypot(player.xSpeed, player.ySpeed)).toBeGreaterThan(0);
+});
+
+test('Should be invulnerable on the start', () => {
+    const player = new Player('0', 'Test', new Polygon([]), () => { });
+
+    let invulnerableTime = player.invulnerableTimer;
+    for (let i = delta; i < invulnerableTime; i += delta) {
+        player.update();
+        expect(player.state).toBe(GameObjectState.Invulnerable);
+    }
+
+    player.update();
+    expect(player.state).toBe(GameObjectState.Active);
+});
+
+test('Should not die while invulnerable', () => {
+    const player = new Player('0', 'Test', new Polygon([]), () => { });
+    const player2 = new Player('1', 'Test2', new Polygon([]), () => { });
+    const bullet = player2.shoot();
+
+    player.onCollision(bullet);
+
+    expect(player.state).toBe(GameObjectState.Invulnerable);
 });

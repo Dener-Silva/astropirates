@@ -1,6 +1,7 @@
 import { Application } from "pixi.js";
 import { Renderer } from "../src/game/Renderer.js";
 import { GameObjectState, ServerTopic } from "dtos";
+jest.useFakeTimers();
 
 test('Should add player in foreground layer', () => {
     const app = new Application();
@@ -80,4 +81,40 @@ test.each([
 
     expect(renderer.bulletGraphics['0']).toBeUndefined();
     expect(bulletGraphics.parent).toBeNull();
+});
+
+test('Player should blink while invulnerable', () => {
+    const app = new Application();
+    const renderer = new Renderer(app);
+    const frameTime = 1000 / 60;
+
+    renderer.addPlayer('0', { nickname: "Technocat" });
+    const player = renderer.playerGraphics['0'];
+
+    renderer.serverUpdate({
+        topic: ServerTopic.GameUpdate,
+        players: { '0': { state: GameObjectState.Invulnerable, x: 0, y: 0, rotation: 0, score: 0 } },
+        bullets: {}
+    });
+    // Player set as Invulnerable, should blink
+    let maxAlpha = Number.NEGATIVE_INFINITY, minAlpha = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < 3000; i += frameTime) {
+        jest.advanceTimersByTime(frameTime);
+        renderer.update();
+        maxAlpha = Math.max(maxAlpha, player.graphics.alpha);
+        minAlpha = Math.min(minAlpha, player.graphics.alpha);
+    }
+    expect(maxAlpha).toBeGreaterThan(minAlpha);
+
+    renderer.serverUpdate({
+        topic: ServerTopic.GameUpdate,
+        players: { '0': { state: GameObjectState.Active, x: 0, y: 0, rotation: 0, score: 0 } },
+        bullets: {}
+    });
+    // Player set as Active, should stop blinking
+    for (let i = 0; i < 3000; i += frameTime) {
+        jest.advanceTimersByTime(frameTime);
+        renderer.update();
+        expect(player.graphics.alpha).toBe(1);
+    }
 });
