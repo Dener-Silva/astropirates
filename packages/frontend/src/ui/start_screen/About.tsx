@@ -28,7 +28,7 @@ export const About = () => {
             <button onClick={open}>About This Game</button>
             <div id="about-modal-backdrop" style={{ display }} onClick={close}>
                 <div
-                    id="about-modal"
+                    className="open-animation-container"
                     style={{ animation, overflow, alignItems }}
                     onClick={(e) => e.stopPropagation()}
                     onAnimationEnd={(e) => {

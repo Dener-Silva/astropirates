@@ -41,8 +41,8 @@ export const ScoreDisplay = () => {
                 <tbody>
                     {top6.map((r) => (
                         <tr key={r.id} style={r.isMe ? { fontWeight: 'bold' } : {}}>
-                            <td>#{r.position}</td>
-                            <td>: {r.nickname}</td>
+                            <td>#{r.position} :</td>
+                            <td>{r.nickname}</td>
                             <td>{r.score} points</td>
                         </tr>
                     ))}

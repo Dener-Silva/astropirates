@@ -77,37 +77,6 @@ export function sendMessage<T>(type: Type<T>, message: T) {
 }
 
 /**
- * Special hook for closing the "Choose Your Name" form.
- * @returns if the name was set successfuly, meaning the player is now in the game
- */
-export function useIsInGame() {
-
-    // useRef is needed to persist the id
-    const myIdRef = useRef<string | null>(null);
-    // useState is needed to re-render
-    const [isInGame, setIsInGame] = useState(false);
-
-    const welcomeCallback = (welcome: Welcome) => {
-        myIdRef.current = welcome.id;
-    }
-    const newPlayerCallback = (newPlayer: NewPlayer) => {
-        if (newPlayer.id === myIdRef.current) {
-            setIsInGame(true);
-        }
-    }
-    useEffect(() => {
-        addTopicListener(ServerTopic.Welcome, welcomeCallback);
-        addTopicListener(ServerTopic.NewPlayer, newPlayerCallback);
-        return () => {
-            removeTopicListener(ServerTopic.Welcome, welcomeCallback);
-            removeTopicListener(ServerTopic.NewPlayer, newPlayerCallback);
-        }
-    }, []);
-
-    return isInGame;
-}
-
-/**
  * Special hook for showing the "Nickname is already taken" warning.
  */
 export function useNicknameAlreadyExists(): [boolean, Dispatch<SetStateAction<boolean>>] {
@@ -168,7 +137,6 @@ export function usePlayersNicknames() {
 
 /**
  * Special hook for listening to changes on the scoreboard 
- * (e.g. logged out or exploded).
  */
 export function useScores() {
 
