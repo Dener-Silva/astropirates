@@ -1,6 +1,6 @@
 @font-face {
-    font-family: "Hershey Roman Duplex";
-    src: url("/Hershey_Roman_Duplex.ttf") format("truetype");
+    font-family: "Hershey Roman Simplex";
+    src: url("/Hershey_Roman_Simplex.ttf") format("truetype");
 }
 
 :root {
@@ -55,7 +55,7 @@ h2 {
 
 h1 {
     font-size: 34pt;
-    font-family: 'Hershey Roman Duplex', sans-serif;
+    font-family: 'Hershey Roman Simplex', sans-serif;
 }
 
 #title {
