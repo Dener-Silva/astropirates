@@ -55,5 +55,14 @@ export class InputSystem {
         this.inputChanged = true;
         this.input.shoot = false;
     }
+
+    onJoystickMove(angle: number, magnitude: number) {
+        this.inputChanged = true;
+        if (magnitude) {
+            this.input.angle = angle;
+        }
+        this.input.magnitude = magnitude;
+    }
 }
 
+export const inputSystemInstance = new InputSystem();

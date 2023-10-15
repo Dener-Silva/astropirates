@@ -4,7 +4,7 @@
 }
 
 :root {
-    --about-modal-width: min(80vw, 880px);
+    --about-modal-width: min(100vw - 20px, 880px);
 }
 
 body {
@@ -16,6 +16,13 @@ body {
     justify-content: center;
     font-family: 'Urbanist', sans-serif;
     color: white;
+    overscroll-behavior: none;
+}
+
+@supports (height: 100dvh) {
+    body {
+        height: 100dvh;
+    }
 }
 
 canvas {
@@ -31,7 +38,7 @@ canvas {
 }
 
 #root {
-    width: calc(100vh * 4 / 3 + 860px);
+    width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
@@ -73,7 +80,6 @@ a:visited {
 
 #name-modal {
     display: flex;
-    width: max-content;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -82,22 +88,24 @@ a:visited {
     border: 1px solid white;
     border-radius: 10px;
     box-shadow: 0px 0px 10px white inset, 0px 0px 10px white;
+    gap: 15px;
 }
 
 #name-form {
-    display: grid;
-    grid-template: 0fr 0fr 0fr / 1fr 0fr;
-    grid-template-areas:
-        "l l"
-        "i s"
-        "w w";
-    justify-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 15px;
 }
 
 #name-form>label {
     font-size: x-large;
     grid-area: l;
+}
+
+#name-form-row {
+    display: flex;
+    gap: 15px;
 }
 
 #nickname {
@@ -147,8 +155,12 @@ td {
     text-shadow: 0 0 5px black;
 }
 
-#score-display>span {
-    font-size: x-large;
+@media only screen and ((max-width: 576px) or (max-height: 600px)) {
+    #score-display {
+        font-size: large;
+        top: 10px;
+        right: 10px;
+    }
 }
 
 #about-modal-backdrop {
@@ -193,14 +205,14 @@ td {
 
     100% {
         max-width: var(--about-modal-width);
-        max-height: 100%;
+        max-height: calc(100% - 20px);
     }
 }
 
 @keyframes close {
     0% {
         max-width: var(--about-modal-width);
-        max-height: 100%;
+        max-height: calc(100% - 20px);
     }
 
     50% {
@@ -228,4 +240,44 @@ td {
     font-size: xx-large;
     padding: 30px;
     text-align: center;
+    user-select: none;
+}
+
+@media only screen and (max-width: 400px) {
+    #title {
+        font-size: 36pt;
+    }
+
+    #name-modal {
+        width: calc(var(--about-modal-width) - 60px);
+    }
+
+    #destroyed-popup-content {
+        font-size: x-large;
+    }
+}
+
+#zone_joystick {
+    position: fixed;
+    width: 100%;
+    height: 100%
+}
+
+#shoot-button {
+    position: fixed;
+    width: 100px;
+    height: 100px;
+    z-index: 1;
+    user-select: none;
+    border-radius: 50px;
+    bottom: 15%;
+    right: 25px;
+    box-shadow: 0px 0px 10px red inset, 0px 0px 10px red;
+}
+
+#fullscreen-button {
+    position: fixed;
+    z-index: 1;
+    bottom: 10px;
+    right: 10px;
 }

@@ -30,8 +30,10 @@ export const NameForm = () => {
         <div id="name-modal">
             <form id="name-form" action="" onSubmit={onSubmit}>
                 <label htmlFor="nickname">Choose Your Name</label>
-                <input id="nickname" type="text" name="nickname" onChange={onChange} maxLength={15} />
-                <input type="submit" name="go" value="GO" disabled={!valid} />
+                <div id="name-form-row">
+                    <input style={{ flex: 1, width: "100%" }} id="nickname" type="text" name="nickname" onChange={onChange} maxLength={15} />
+                    <input style={{ flex: 0 }} type="submit" name="go" value="GO" disabled={!valid} />
+                </div>
             </form>
             <div className="warning" style={{ visibility: alreadyExists ? 'visible' : 'hidden' }}>
                 Nickname is already taken

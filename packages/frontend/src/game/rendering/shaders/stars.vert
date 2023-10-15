@@ -1,17 +1,16 @@
 precision mediump float;
 
-const vec2 baseResolution = vec2(800.0, 600.0);
-const vec2 halfBaseResolution = baseResolution / 2.0;
-
 attribute vec3 starPosition;
 attribute vec2 uv;
 
-uniform float aspectRatio;
+uniform vec2 baseResolution;
 uniform vec2 playerPosition;
 
 varying highp vec2 vTextureCoord;
 
 void main() {
+    vec2 halfBaseResolution = baseResolution / 2.0;
+    
     vec2 vertexPositionOffset = (uv - 0.5) * (20.0 * starPosition.z + 2.0);
     vec2 starPositionParallax = starPosition.xy + playerPosition * starPosition.z;
     // 11px vertical border to hide stars warping

@@ -46,7 +46,7 @@ export class GameServer {
 
     registerInputs(id: string, input: Input) {
         const inputs = this.inputs[id];
-        if (inputs.unshift(input) > 2) {
+        if (inputs && inputs.unshift(input) > 2) {
             inputs.pop();
         }
     }

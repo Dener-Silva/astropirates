@@ -5,6 +5,10 @@ import { StartScreen } from './start_screen/StartScreen.tsx'
 import './main.css'
 import { GameStateProvider } from './GameStateContext.tsx'
 import { DeathScreen } from './DeathScreen.tsx'
+import { Joystick } from './touch_controls/Joystick.tsx'
+import { ShootButton } from './touch_controls/ShootButton.tsx'
+import { isMultiTouch } from '../isMultiTouch.tsx'
+import { FullscreenButton } from './touch_controls/FullscreenButton.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
@@ -12,6 +16,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <GameStateProvider>
             <StartScreen></StartScreen>
             <DeathScreen></DeathScreen>
+            {isMultiTouch() && (<>
+                <Joystick />
+                <ShootButton />
+                <FullscreenButton />
+            </>)
+            }
         </GameStateProvider>
     </React.StrictMode>,
 )

@@ -5,7 +5,11 @@ import starUrl from './star.png'
 
 export class Stars {
 
-    private playerPosition = [0, 0]
+    private uniforms = {
+        baseResolution: window.innerWidth > window.innerHeight ? [800, 600] : [600, 800],
+        playerPosition: [0, 0],
+        uSampler: Texture.from(starUrl)
+    }
 
     constructor(stage: Container) {
 
@@ -48,18 +52,17 @@ export class Stars {
             .addAttribute('starPosition', starsPositions.flat(), 3)
             .addAttribute('uv', uv, 2)
             .addIndex(verticesIndices);
-        const uniforms = {
-            aspectRatio: 4 / 3,
-            playerPosition: this.playerPosition,
-            uSampler: Texture.from(starUrl)
-        }
-        const shader = Shader.from(vertexSrc, fragmentSrc, uniforms);
+        const shader = Shader.from(vertexSrc, fragmentSrc, this.uniforms);
         const mesh = new Mesh(geometry, shader as any);
         stage.addChild(mesh);
+
+        window.addEventListener("resize", () => {
+            this.uniforms.baseResolution = window.innerWidth > window.innerHeight ? [800, 600] : [600, 800];
+        });
     }
 
     update(x: number, y: number): void {
-        this.playerPosition[0] = -x
-        this.playerPosition[1] = y
+        this.uniforms.playerPosition[0] = -x
+        this.uniforms.playerPosition[1] = y
     }
 }

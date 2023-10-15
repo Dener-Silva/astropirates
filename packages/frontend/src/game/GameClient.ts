@@ -1,37 +1,42 @@
 import { Application } from "pixi.js";
-import { InputSystem } from "./InputSystem.js";
+import { inputSystemInstance } from "./InputSystem.js";
 import { Renderer } from "./Renderer.js";
 import { addTopicListener, sendMessage } from "../WebSocketClient.js";
 import { GameUpdate, NewPlayer, ServerTopic, Welcome, inputType } from "dtos";
+import { isMultiTouch } from "../isMultiTouch.js";
 
 // Initialize rendering (Pixi.JS)
 const gameCanvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 
 const app = new Application({
     view: gameCanvas,
-    resizeTo: gameCanvas,
     backgroundAlpha: 0,
-    antialias: true
+    antialias: true,
+    resolution: devicePixelRatio,
+    autoDensity: true
 });
 
 const resize = () => {
     // Scale the game to the window keeping aspect ratio
-    const aspectRatio = 4 / 3;
+    const horizontal = window.innerWidth > window.innerHeight;
+    const baseWidth = horizontal ? 800 : 600;
+    const baseHeight = horizontal ? 600 : 800;
+    const aspectRatio = baseWidth / baseHeight;
     let limitedByHeight = (window.innerWidth / window.innerHeight) > aspectRatio;
-    let scale: number;
+    let scale, width, height;
     if (limitedByHeight) {
-        gameCanvas.width = window.innerHeight * aspectRatio;
-        gameCanvas.height = window.innerHeight;
-        scale = window.innerHeight / 600;
+        scale = window.innerHeight / baseHeight;
+        width = window.innerHeight * aspectRatio;
+        height = window.innerHeight;
     } else {
-        gameCanvas.width = window.innerWidth;
-        gameCanvas.height = window.innerWidth / aspectRatio;
-        scale = window.innerWidth / 800;
+        scale = window.innerWidth / baseWidth;
+        width = window.innerWidth;
+        height = window.innerWidth / aspectRatio;
     }
     app.stage.scale.x = app.stage.scale.y = scale;
-    app.stage.x = app.renderer.width / 2;
-    app.stage.y = app.renderer.height / 2;
-    app.renderer.resize(gameCanvas.width, gameCanvas.height);
+    app.stage.x = width / 2;
+    app.stage.y = height / 2;
+    app.renderer.resize(width, height);
 }
 window.addEventListener("load", resize);
 window.addEventListener("resize", resize);
@@ -42,10 +47,14 @@ app.ticker.add((_delta) => {
 });
 
 // Subscribe to input events
-const inputSystem = new InputSystem();
-document.addEventListener('pointermove', (e) => inputSystem.onPointerMove(e));
-document.addEventListener('mousedown', () => inputSystem.onMouseDown());
-document.addEventListener('mouseup', () => inputSystem.onMouseUp());
+const inputSystem = inputSystemInstance;
+
+// Inputs if on mouse + keyboard
+if (!isMultiTouch()) {
+    document.addEventListener('pointermove', (e) => inputSystem.onPointerMove(e));
+    document.addEventListener('mousedown', () => inputSystem.onMouseDown());
+    document.addEventListener('mouseup', () => inputSystem.onMouseUp());
+}
 document.addEventListener('keydown', (e) => e.key === ' ' && inputSystem.onMouseDown());
 document.addEventListener('keyup', (e) => e.key === ' ' && inputSystem.onMouseUp());
 

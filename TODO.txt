@@ -85,4 +85,5 @@
         - High score screen
             - Layout
             - Fetch from database
+	- Screen message when disconnected from server
 - Docs (To be expanded)

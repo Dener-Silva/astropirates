@@ -102,12 +102,19 @@ test("Should ignore dead player's inputs", () => {
     gameServer.update();
     gameServer.cleanup();
 
-    expect(() => gameServer.registerInputs('0', {
+    gameServer.registerInputs('0', {
         topic: ClientTopic.Input,
         angle: 0,
         magnitude: 0,
         shoot: true
-    })).toThrow();
+    })
+
+    const result = gameServer.update();
+
+    const bullets = Object.values(result.bullets);
+    expect(bullets).toHaveLength(0);
+    expect(add).toHaveBeenCalledTimes(1);
+    expect(add).toHaveBeenCalledWith(player!.collider);
 });
 
 test('Adding player twice should be idempotent', () => {
