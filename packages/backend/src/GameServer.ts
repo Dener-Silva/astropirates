@@ -8,7 +8,7 @@ import { newId } from './newId.js';
 export class GameServer {
     players: Dictionary<Player> = {};
     bullets: Dictionary<Bullet> = {};
-    inputs: Dictionary<Input> = {};
+    inputs: Dictionary<Input[]> = {};
 
     constructor(private sweepAndPrune: SweepAndPrune) { }
 
@@ -23,6 +23,7 @@ export class GameServer {
         this.sweepAndPrune.add(collider);
         const player = new Player(id, nickname, collider, onDestroyed);
         this.players[id] = player;
+        this.inputs[id] = [];
         return player;
     }
 
@@ -44,8 +45,9 @@ export class GameServer {
     }
 
     registerInputs(id: string, input: Input) {
-        if (this.players[id]) {
-            this.inputs[id] = input;
+        const inputs = this.inputs[id];
+        if (inputs.unshift(input) > 2) {
+            inputs.pop();
         }
     }
 
@@ -56,8 +58,12 @@ export class GameServer {
         }
 
         // Proccess input
-        for (const [id, input] of Object.entries(this.inputs)) {
+        for (const [id, inputs] of Object.entries(this.inputs)) {
             const player = this.players[id]!;
+            const input = inputs.length > 1 ? inputs.pop() : inputs[0];
+            if (!input) {
+                continue;
+            }
             player.move(input);
             if (input.shoot && player.canShoot) {
                 const bullet = player.shoot();

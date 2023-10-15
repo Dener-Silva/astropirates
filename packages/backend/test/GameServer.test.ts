@@ -96,24 +96,25 @@ test("Should ignore dead player's inputs", () => {
     const add = sweepAndPrune.add = jest.fn();
     const gameServer = new GameServer(sweepAndPrune);
 
-    gameServer.addPlayer('0', 'Technocat', () => { });
-    gameServer.registerInputs('0', {
+    const player = gameServer.addPlayer('0', 'Technocat', () => { });
+    player!.state = GameObjectState.Exploded;
+
+    gameServer.update();
+    gameServer.cleanup();
+
+    expect(() => gameServer.registerInputs('0', {
         topic: ClientTopic.Input,
         angle: 0,
         magnitude: 0,
         shoot: true
-    })
-
-    gameServer.update();
-    const player = Object.values(gameServer.players)[0];
-    const bullet = Object.values(gameServer.bullets)[0];
-
-    expect(add).toHaveBeenCalledWith(player.collider);
-    expect(add).toHaveBeenCalledWith(bullet.collider);
+    })).toThrow();
 });
 
 test('Adding player twice should be idempotent', () => {
-    const gameServer = new GameServer(new SweepAndPrune());
+    const sweepAndPrune = new SweepAndPrune();
+    const add = sweepAndPrune.add = jest.fn();
+    const remove = sweepAndPrune.remove = jest.fn();
+    const gameServer = new GameServer(sweepAndPrune);
 
     const player = gameServer.addPlayer('0', 'Technocat', () => { });
     player!.state = GameObjectState.Exploded;
@@ -126,6 +127,11 @@ test('Adding player twice should be idempotent', () => {
     expect(player2?.nickname).toEqual('Technocat');
     expect(result.players[0]).toBe(player2);
     expect(Object.keys(result.players)).toHaveLength(1);
+    expect(add).toHaveBeenCalledTimes(2);
+    expect(add).toHaveBeenCalledWith(player!.collider);
+    expect(add).toHaveBeenCalledWith(player2!.collider);
+    expect(remove).toHaveBeenCalledTimes(1);
+    expect(remove).toHaveBeenCalledWith(player!.collider);
 });
 
 test('Should update the nickname', () => {
@@ -145,9 +151,7 @@ test('Should update the nickname', () => {
 });
 
 test("Should remove dead players's nickname after they log out", () => {
-    const sweepAndPrune = new SweepAndPrune();
-    const remove = sweepAndPrune.remove = jest.fn();
-    const gameServer = new GameServer(sweepAndPrune);
+    const gameServer = new GameServer(new SweepAndPrune());
 
     const player = gameServer.addPlayer('0', 'Technocat', () => { });
     expect(player).not.toBeNull();
@@ -157,4 +161,64 @@ test("Should remove dead players's nickname after they log out", () => {
 
     expect(result).not.toBeNull();
     expect(result!.nickname).toEqual('Technocat');
+});
+
+test("Buffer inputs", () => {
+    const gameServer = new GameServer(new SweepAndPrune());
+
+    gameServer.addPlayer('0', 'Technocat', () => { });
+    gameServer.registerInputs('0', {
+        topic: ClientTopic.Input,
+        angle: 0,
+        magnitude: 0,
+        shoot: true
+    });
+    gameServer.registerInputs('0', {
+        topic: ClientTopic.Input,
+        angle: 0,
+        magnitude: 0,
+        shoot: false
+    });
+    let result = gameServer.update();
+
+    const bullets = Object.values(result.bullets);
+    expect(bullets.length).toEqual(1);
+});
+
+test("Buffer 2 inputs at most", () => {
+    const gameServer = new GameServer(new SweepAndPrune());
+
+    gameServer.addPlayer('0', 'Technocat', () => { });
+    for (let i = 0; i < 3; i++) {
+        gameServer.registerInputs('0', {
+            topic: ClientTopic.Input,
+            angle: 1,
+            magnitude: 0,
+            shoot: true
+        });
+    }
+
+    expect(gameServer.inputs['0'].length).toEqual(2);
+});
+
+test("Take inputs in the order they are registered", () => {
+    const gameServer = new GameServer(new SweepAndPrune());
+
+    gameServer.addPlayer('0', 'Technocat', () => { });
+    gameServer.registerInputs('0', {
+        topic: ClientTopic.Input,
+        angle: 0,
+        magnitude: 0,
+        shoot: false
+    });
+    gameServer.registerInputs('0', {
+        topic: ClientTopic.Input,
+        angle: 0,
+        magnitude: 0,
+        shoot: true
+    });
+    const result = gameServer.update();
+
+    const bullets = Object.values(result.bullets);
+    expect(bullets.length).toEqual(0);
 });
