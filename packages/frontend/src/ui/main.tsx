@@ -9,6 +9,7 @@ import { Joystick } from './touch_controls/Joystick.tsx'
 import { ShootButton } from './touch_controls/ShootButton.tsx'
 import { isMultiTouch } from '../isMultiTouch.tsx'
 import { FullscreenButton } from './touch_controls/FullscreenButton.tsx'
+import { ConnectionLostWarning } from './ConnectionLostWarning.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
@@ -23,5 +24,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             </>)
             }
         </GameStateProvider>
+        <ConnectionLostWarning />
     </React.StrictMode>,
 )

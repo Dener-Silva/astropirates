@@ -22,11 +22,11 @@ export const DeathScreen = () => {
     const animation = continueClicked ? "close 1000ms forwards" : "open 1000ms forwards";
 
     return (
-        <div id="death-screen-backdrop" style={{ display }}>
+        <div className="popup-backdrop" style={{ display }}>
             <div
                 className="open-animation-container"
                 style={{ animation }}>
-                <div id="destroyed-popup-content">
+                <div className="popup-content">
                     <span>You were destroyed by<br />{enemyNickname}</span>
                 </div>
             </div>

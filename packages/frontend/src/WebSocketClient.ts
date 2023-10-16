@@ -187,3 +187,29 @@ export function useSubscribeToTopic<T>(topic: ServerTopic) {
 
     return message;
 }
+
+/**
+ * Hook for warning that the user is disconnected from the server.
+ * @returns Wether the user is disconnected.
+ */
+export function useIsDisconnected() {
+    const lastUpdate = useRef(performance.now());
+    const [isDisconnected, setIsDisconnected] = useState(false);
+
+    const gameUpdateCallback = () => {
+        lastUpdate.current = performance.now();
+    }
+    const checkConnection = () => {
+        setIsDisconnected(performance.now() - lastUpdate.current > 2000);
+    }
+    useEffect(() => {
+        addTopicListener(ServerTopic.GameUpdate, gameUpdateCallback);
+        const id = setInterval(checkConnection, 2000);
+        return () => {
+            removeTopicListener(ServerTopic.GameUpdate, gameUpdateCallback);
+            clearInterval(id);
+        }
+    }, []);
+
+    return isDisconnected;
+}
