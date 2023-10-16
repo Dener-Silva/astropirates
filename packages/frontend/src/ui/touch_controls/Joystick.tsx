@@ -1,4 +1,4 @@
-import _React, { ClassAttributes, useContext, useEffect, useRef, useState } from "react";
+import _React, { useContext, useEffect, useRef } from "react";
 import { GameState, GameStateContext } from "../GameStateContext";
 import nipplejs from "nipplejs";
 import { inputSystemInstance } from "../../game/InputSystem";

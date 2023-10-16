@@ -1,10 +1,5 @@
 import avro from 'avro-js';
 
-export type ClientMessage = {
-    topic: ClientTopic,
-    [field: string]: any
-}
-
 export enum ClientTopic {
     "SetNickname",
     "Input"
