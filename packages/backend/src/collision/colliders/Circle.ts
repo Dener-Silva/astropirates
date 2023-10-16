@@ -1,4 +1,7 @@
+import { circleVsPointSAT, circleVsPolygonSAT } from "../SAT.js";
 import { Collider, AABB, ObjectWithCollider } from "./Collider.js";
+import { Point } from "./Point.js";
+import { Polygon } from "./Polygon.js";
 
 export class Circle implements Collider {
 
@@ -10,8 +13,15 @@ export class Circle implements Collider {
 
     constructor(public radius: number) { }
 
-    collidesWith(_collider: Collider): boolean {
-        throw new Error("Method not implemented.");
+    collidesWith(collider: Collider): boolean {
+        if (collider instanceof Circle) {
+            return Math.hypot(this.x - collider.x, this.y - collider.y) <= this.radius + collider.radius;
+        } else if (collider instanceof Point) {
+            return circleVsPointSAT(this, collider);
+        } else if (collider instanceof Polygon) {
+            return circleVsPolygonSAT(this, collider);
+        }
+        throw new Error(`Collider of unknown type: ${collider.constructor.name}`)
     }
 
     public get aabb(): AABB {

@@ -78,10 +78,7 @@ export class Player implements ObjectWithCollider {
                 this.state = GameObjectState.Exploded;
             }
             return;
-        } else if (other instanceof Player) {
-            return;
         }
-        throw new Error(`Collided with object of unknown type: ${other.constructor.name}`);
     }
 
     get canShoot(): boolean {

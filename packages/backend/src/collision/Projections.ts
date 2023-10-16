@@ -1,3 +1,4 @@
+import { Circle } from "./colliders/Circle.js";
 import { Point } from "./colliders/Point.js";
 import { Polygon } from "./colliders/Polygon.js";
 import { Vector } from "./VectorFunctions.js";
@@ -19,4 +20,10 @@ export function projectPolygonOnAxis(polygon: Polygon, axis: Vector): Vector {
 export function projectPointOnAxis(point: Point, axis: Vector): Vector {
     const projectedPoint = dot(axis, point.x, point.y);
     return [projectedPoint, projectedPoint];
+}
+
+/** Axis is expected to be normalized */
+export function projectCircleOnAxis(circle: Circle, axis: Vector): Vector {
+    const projectedCenter = dot(axis, circle.x, circle.y);
+    return [projectedCenter - circle.radius, projectedCenter + circle.radius];
 }

@@ -47,6 +47,5 @@ export class Bullet implements ObjectWithCollider {
             return;
         }
         this.state = GameObjectState.Exploded;
-        return;
     }
 }

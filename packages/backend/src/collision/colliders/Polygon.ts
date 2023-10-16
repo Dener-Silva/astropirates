@@ -1,5 +1,6 @@
 import { Player } from "../../Player.js";
-import { pointVsPolygonSAT, polygonVsPolygonSAT } from "../SAT.js";
+import { circleVsPolygonSAT, pointVsPolygonSAT, polygonVsPolygonSAT } from "../SAT.js";
+import { Circle } from "./Circle.js";
 import { Collider, AABB } from "./Collider.js";
 import { Point } from "./Point.js";
 
@@ -97,9 +98,10 @@ export class Polygon implements Collider {
     collidesWith(collider: Collider): boolean {
         if (collider instanceof Point) {
             return pointVsPolygonSAT(collider, this);
-        }
-        else if (collider instanceof Polygon) {
+        } else if (collider instanceof Polygon) {
             return polygonVsPolygonSAT(this, collider);
+        } else if (collider instanceof Circle) {
+            return circleVsPolygonSAT(collider, this);
         }
         throw new Error(`Collider of unknown type: ${collider.constructor.name}`)
     }

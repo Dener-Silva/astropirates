@@ -1,5 +1,5 @@
 - Backend
-	- Networking
+	- Networking - OK
 		- Receive data - OK
 		- Send data - OK
 		- Tickrate - OK
@@ -8,42 +8,33 @@
 			- Client - OK
 			- Server - OK
 		- Get and store player input - OK
-        - Send data to players
+        - Send data to players - OK
             - Positions and rotations - OK
             - Deaths - OK
-            - Warps
-			- Shields
             - Names - OK
             - Scoreboard - OK
-    		- Send only what the player can see?
-		- Full update on packet loss?
-	- Main game loop
+	- Main game loop - OK
 		- Timing - OK
 		- Get frame specific input - OK
-		- AI (To be expanded)
-		- Move
+		- Move - OK
 			- Players (From user input) - OK
-			- Players (From AI)
 			- Bullets - OK
             - Limit (asteroid belt?) - OK
 		- Shoot - OK
-		- Warp?
-		- Shield?
-		- Collide
+		- Collide - OK
 			- Player/bullet - OK
 			- Player/limit - OK
-			- Shield/bullet
 		- Implement Scoreboard - OK
 		- Respawn invencibility - OK
+	- AI (To be expanded)
 	- Test screen to see server simulation in real time
 	- Performance information screen
 - Front end
-	- Render (basic)
+	- Render (basic) - OK
 		- Stars - OK
 		- Ship - OK
 		- Bullet - OK
 		- Asteroids belt - OK
-		- CRT shader?
 	- Input - OK
         - Input to console.log - OK
 		- Move - OK
@@ -54,7 +45,6 @@
 		- Debounce input - OK
 		- Send user names - OK
 		- Receive and store frame data / Deserialization - OK
-            - Object pool?
 			- Create - OK
 				- Players - OK
 				- Bullets - OK
@@ -64,8 +54,7 @@
 			- Delete - OK
 				- Players - OK
 				- Bullets - OK
-		- Full update on packet loss?
-	- Main game loop
+	- Main game loop - OK
 		- Move - OK
 			- Players - OK
 			- Bullets - OK
@@ -79,11 +68,12 @@
 	- Explosion effects - OK
 		- Players - OK
 		- Bullets - OK
+	- Screen message when disconnected from server - OK
+	- CRT shader?
     - UI
 		- Install React - OK
         - Name choosing screen - OK
         - High score screen
             - Layout
             - Fetch from database
-	- Screen message when disconnected from server
 - Docs (To be expanded)
