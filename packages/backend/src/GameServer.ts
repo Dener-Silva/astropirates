@@ -1,4 +1,4 @@
-import { GameUpdate, Input, Dictionary, ServerTopic, GameObjectState } from 'dtos';
+import { GameUpdate, Input, Dictionary, ServerTopic, GameObjectState, ClientTopic } from 'dtos';
 import { Player } from './Player.js';
 import { SweepAndPrune } from './collision/SweepAndPrune.js';
 import { Polygon } from './collision/colliders/Polygon.js';
@@ -8,7 +8,8 @@ import { newId } from './newId.js';
 export class GameServer {
     players: Dictionary<Player> = {};
     bullets: Dictionary<Bullet> = {};
-    inputs: Dictionary<Input[]> = {};
+    inputBuffers: Dictionary<Input[]> = {};
+    lastInputs: Dictionary<Input> = {};
 
     constructor(private sweepAndPrune: SweepAndPrune) { }
 
@@ -23,7 +24,7 @@ export class GameServer {
         this.sweepAndPrune.add(collider);
         const player = new Player(id, nickname, collider, onDestroyed);
         this.players[id] = player;
-        this.inputs[id] = [];
+        this.inputBuffers[id] = [];
         return player;
     }
 
@@ -41,13 +42,14 @@ export class GameServer {
         const player = this.players[id];
         this.sweepAndPrune.remove(player?.collider);
         delete this.players[id];
-        delete this.inputs[id];
+        delete this.inputBuffers[id];
+        delete this.lastInputs[id];
     }
 
     registerInputs(id: string, input: Input) {
-        const inputs = this.inputs[id];
-        if (inputs && inputs.unshift(input) > 2) {
-            inputs.pop();
+        const inputBuffer = this.inputBuffers[id];
+        if (inputBuffer && inputBuffer.unshift(input) > 2) {
+            inputBuffer.pop();
         }
     }
 
@@ -57,13 +59,23 @@ export class GameServer {
             bullet.update();
         }
 
-        // Proccess input
-        for (const [id, inputs] of Object.entries(this.inputs)) {
-            const player = this.players[id]!;
-            const input = inputs.length > 1 ? inputs.pop() : inputs[0];
+        // Proccess inputs
+        for (const [id, inputBuffer] of Object.entries(this.inputBuffers)) {
+            if (!inputBuffer) {
+                continue;
+            }
+            // Get input from buffer first
+            let input = inputBuffer.pop();
+            if (input) {
+                this.lastInputs[id] = input;
+            } else {
+                // Buffer is empty, reuse last known input
+                input = this.lastInputs[id];
+            }
             if (!input) {
                 continue;
             }
+            const player = this.players[id]!;
             player.move(input);
             if (input.shoot && player.canShoot) {
                 const bullet = player.shoot();

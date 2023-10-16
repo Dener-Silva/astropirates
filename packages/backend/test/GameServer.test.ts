@@ -49,6 +49,8 @@ test.each([
 
     expect(remove).toHaveBeenCalledWith(player!.collider);
     expect(gameServer.players['0']).toBeUndefined();
+    expect(gameServer.inputBuffers['0']).toBeUndefined();
+    expect(gameServer.lastInputs['0']).toBeUndefined();
 });
 
 test.each([
@@ -205,7 +207,7 @@ test("Buffer 2 inputs at most", () => {
         });
     }
 
-    expect(gameServer.inputs['0'].length).toEqual(2);
+    expect(gameServer.inputBuffers['0'].length).toEqual(2);
 });
 
 test("Take inputs in the order they are registered", () => {
@@ -228,4 +230,27 @@ test("Take inputs in the order they are registered", () => {
 
     const bullets = Object.values(result.bullets);
     expect(bullets.length).toEqual(0);
+});
+
+test("Proccess inputs immediately if buffer is empty", () => {
+    const gameServer = new GameServer(new SweepAndPrune());
+
+    gameServer.addPlayer('0', 'Technocat', () => { });
+    gameServer.registerInputs('0', {
+        topic: ClientTopic.Input,
+        angle: 0,
+        magnitude: 0,
+        shoot: false
+    });
+    gameServer.update();
+    gameServer.registerInputs('0', {
+        topic: ClientTopic.Input,
+        angle: 0,
+        magnitude: 0,
+        shoot: true
+    });
+    const result = gameServer.update();
+
+    const bullets = Object.values(result.bullets);
+    expect(bullets.length).toEqual(1);
 });
