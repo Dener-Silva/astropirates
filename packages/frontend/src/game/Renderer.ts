@@ -54,7 +54,7 @@ export class Renderer {
             const previousPosition = this.previousPlayers[id];
             let ship = this.playerGraphics[id];
             if (!ship) {
-                console.error('playerGraphics not found for ID', id);
+                console.warn('playerGraphics not found for ID', id);
                 continue;
             }
             if (previousPosition) {
@@ -88,7 +88,7 @@ export class Renderer {
             const previousPosition = this.previousBullets[id];
             let bulletGraphics = this.bulletGraphics[id];
             if (!bulletGraphics) {
-                console.error('bulletGraphics not found for ID', id);
+                console.warn('bulletGraphics not found for ID', id);
                 continue;
             }
             if (previousPosition) {

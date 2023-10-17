@@ -4,6 +4,7 @@ import { GameServer } from "./GameServer.js";
 import { tickrate } from './delta.js';
 import { newId } from "./newId.js";
 import { Type } from "avro-js";
+import { Player } from "./Player.js";
 
 export class WebSocketServerRunner {
 
@@ -46,11 +47,7 @@ export class WebSocketServerRunner {
                             const player = gameServer.addPlayer(id, message.nickname, onDestroyed);
                             // If player was successfully added, broadcast
                             if (player) {
-                                this.broadcast(newPlayerType, {
-                                    topic: ServerTopic.NewPlayer,
-                                    id,
-                                    player
-                                });
+                                this.onPlayerAdded(id, player);
                             } else {
                                 ws.send(topicType.toBuffer(ServerTopic.NicknameAlreadyExists));
                             }
@@ -95,5 +92,13 @@ export class WebSocketServerRunner {
 
     onGameUpdate(gameUpdate: GameUpdate) {
         this.broadcast(gameUpdateType, gameUpdate);
+    }
+
+    onPlayerAdded(id: string, player: Player) {
+        this.broadcast(newPlayerType, {
+            topic: ServerTopic.NewPlayer,
+            id,
+            player
+        });
     }
 }

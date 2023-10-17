@@ -34,7 +34,7 @@ const server = createServer();
 
 const gameServer = new GameServer(new SweepAndPrune());
 const webSocketServer = new WebSocketServerRunner(new WebSocketServer({ server }), gameServer);
-const ai = new AI(gameServer);
+const ai = new AI(gameServer, webSocketServer);
 
 // Using setImmediate so the tickrate can be read from the dotenv file.
 setImmediate(() =>

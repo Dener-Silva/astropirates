@@ -5,6 +5,16 @@ import { Polygon } from './collision/colliders/Polygon.js';
 import { Bullet } from './Bullet.js';
 import { newId } from './newId.js';
 
+function randomPosition() {
+    let x, y;
+    do {
+        x = Math.random() - 0.5;
+        y = Math.random() - 0.5;
+    } while (Math.hypot(x, y) > 0.5)
+
+    return [x * 3200, y * 3200]
+}
+
 export class GameServer {
     players: Dictionary<Player> = {};
     bullets: Dictionary<Bullet> = {};
@@ -22,7 +32,7 @@ export class GameServer {
         }
         const collider = new Polygon([-45, -30, -45, 30, 45, 0]);
         this.sweepAndPrune.add(collider);
-        const player = new Player(id, nickname, collider, onDestroyed);
+        const player = new Player(id, nickname, collider, onDestroyed, ...randomPosition());
         this.players[id] = player;
         this.inputBuffers[id] = [];
         return player;

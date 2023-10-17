@@ -17,8 +17,6 @@ const shootCoolDown = 200;
 export class Player implements ObjectWithCollider {
 
     state = GameObjectState.Invulnerable;
-    x: number
-    y: number
     xSpeed = 0
     ySpeed = 0
     rotation = Math.PI / 2;
@@ -30,11 +28,13 @@ export class Player implements ObjectWithCollider {
         public id: string,
         public nickname: string,
         public collider: Polygon,
-        public onDestroyed: (byWhom: string) => void
+        public onDestroyed: (byWhom: string) => void,
+        public x = 0,
+        public y = 0
     ) {
         collider.owner = this;
-        // TODO random position. Do not forget to update collider
-        this.x = this.y = 0
+        collider.x = x;
+        collider.y = y;
     }
 
     update() {
