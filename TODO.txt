@@ -77,3 +77,6 @@
             - Layout
             - Fetch from database
 - Docs (To be expanded)
+
+- Do not add palyergraphics twice
+- Only top3 on mobile

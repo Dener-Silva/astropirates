@@ -21,10 +21,10 @@ const reactionTime = 500;
 
 type Actor = {
     state: ActorState
-    angle: number
     targetAngle: number
     input: Input
     reactionTimer: number
+    chasingAi: boolean
 }
 
 export class AI {
@@ -68,11 +68,16 @@ export class AI {
             const input = actor.input;
             switch (actor.state) {
                 case ActorState.Chasing:
-                    const angleDist = Math.abs(angleDistance(actor.angle, actor.targetAngle));
+                    const angleDist = Math.abs(angleDistance(input.angle, actor.targetAngle));
                     input.shoot = angleDist < Math.PI / 2;
-                    input.angle = actor.angle = rotateTowards(actor.angle, actor.targetAngle, 0.1);
-                    const magnitude = (1 - Math.sqrt(angleDist / Math.PI)) - 0.5;
-                    input.magnitude = Math.max(magnitude, 0);
+                    input.angle = rotateTowards(input.angle, actor.targetAngle, 0.1);
+                    if (angleDist > Math.PI / 2) {
+                        input.magnitude = 0;
+                    } else {
+                        // AI is slower vs AI to avoid stalemate
+                        const multiplier = actor.chasingAi ? 0.5 : 0.75;
+                        input.magnitude = (1 - Math.sin(angleDist)) * multiplier;
+                    }
                     actor.state = ActorState.StoppedChasing;
                     break;
                 case ActorState.StoppedChasing:
@@ -82,8 +87,13 @@ export class AI {
                 case ActorState.Idle:
                     input.shoot = false;
                     input.magnitude = 0.1;
-                    input.angle = actor.angle = rotateTowards(actor.angle, actor.targetAngle, 0.01);
-                    if (angleDistance(input.angle, actor.targetAngle) < 0.01) {
+                    input.angle = rotateTowards(input.angle, actor.targetAngle, 0.01);
+                    const collider = this.players[id];
+                    // If on edge, go back to the center
+                    if (Math.hypot(collider.x, collider.y) > 1000) {
+                        const angleTowardsCenter = Math.atan2(collider.x, -collider.y) + Math.PI / 2;
+                        actor.targetAngle = angleTowardsCenter;
+                    } else if (Math.abs(angleDistance(input.angle, actor.targetAngle)) < 0.01) {
                         actor.targetAngle = randomAngle();
                     }
                     break;
@@ -106,15 +116,15 @@ export class AI {
             this.webSocketServer.onPlayerAdded(id, player);
             this.actors[id] = {
                 state: ActorState.Idle,
-                angle: randomAngle(),
                 targetAngle: randomAngle(),
                 input: {
                     topic: ClientTopic.Input,
                     shoot: false,
                     magnitude: 0,
-                    angle: 0
+                    angle: randomAngle()
                 },
                 reactionTimer: reactionTime,
+                chasingAi: false
             };
         }
     }
@@ -125,6 +135,8 @@ export class AI {
         // Don't chase if invulnerable
         if (actor.reactionTimer < 0 && ai.state !== GameObjectState.Invulnerable) {
             actor.state = ActorState.Chasing;
+            // Only AI colliders have owner
+            actor.chasingAi = Boolean(enemy.owner);
             actor.targetAngle = Math.atan2(enemy.x - ai.x, ai.y - enemy.y) - Math.PI / 2;
         }
     }
