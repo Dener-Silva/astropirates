@@ -24,15 +24,76 @@
             margin: 0;
             height: 100dvh;
             background-color: black;
+            color: white;
         }
 
         canvas {
             position: fixed;
+            z-index: -1;
+        }
+
+        #controls {
+            position: fixed;
+            padding: 50px;
         }
     </style>
 </head>
 
 <body>
+    <div id="controls">
+        <h1>Bot Controls</h1>
+        <table>
+            <tbody id="tbody">
+                <tr>
+                    <td>Reaction Time</td>
+                    <td><input id="reactionTime" type="range" min="0" max="1000" class="slider" /></td>
+                    <td id="reactionTimeText"></td>
+                </tr>
+                <tr>
+                    <td>Idle Speed</td>
+                    <td><input id="idleSpeed" type="range" min="0" max="1" class="slider" step="0.01" /></td>
+                    <td id="idleSpeedText"></td>
+                </tr>
+                <tr>
+                    <td>Idle Angular Velocity</td>
+                    <td><input id="idleAngularVelocity" type="range" min="0" max="1" class="slider" step="0.01" /></td>
+                    <td id="idleAngularVelocityText"></td>
+                </tr>
+                <tr>
+                    <td>Chasing AI Speed Multiplier</td>
+                    <td><input id="chasingAISpeedMultiplier" type="range" min="0" max="1" class="slider" step="0.01" />
+                    </td>
+                    <td id="chasingAISpeedMultiplierText"></td>
+                </tr>
+                <tr>
+                    <td>Chasing Player Speed Multiplier</td>
+                    <td><input id="chasingPlayerSpeedMultiplier" type="range" min="0" max="1" class="slider"
+                            step="0.01" /></td>
+                    <td id="chasingPlayerSpeedMultiplierText"></td>
+                </tr>
+                <tr>
+                    <td>Chasing Angular Velocity</td>
+                    <td><input id="chasingAngularVelocity" type="range" min="0" max="1" class="slider" step="0.01" />
+                    </td>
+                    <td id="chasingAngularVelocityText"></td>
+                </tr>
+                <tr>
+                    <td>AI Vision Distance</td>
+                    <td><input id="aiVisionDistance" type="range" min="0" max="3600" class="slider" /></td>
+                    <td id="aiVisionDistanceText"></td>
+                </tr>
+                <tr>
+                    <td>Quantity</td>
+                    <td><input id="quantity" type="range" min="0" max="100" class="slider" /></td>
+                    <td id="quantityText"></td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="display: flex; justify-content: space-evenly;">
+            <button id="kill-bots">Kill Bots</button>
+            <button id="reset">Reset</button>
+        </div>
+    </div>
     <canvas id="game-canvas"></canvas>
     <script type="module" src="../src/game/GameAdmin.ts"></script>
 </body>

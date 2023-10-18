@@ -6,14 +6,17 @@ import { newId } from "./newId.js";
 import { Type } from "avro-js";
 import { Player } from "./Player.js";
 
-export class WebSocketServerRunner {
+export class GameWebSocketRunner {
 
-    readonly ponged = new WeakSet<WebSocket>();
+    readonly clients = new WeakSet<WebSocket>();
 
     constructor(private wss: WebSocketServer, gameServer: GameServer) {
         wss.on('connection', (ws) => {
             // TODO: check origin
-            this.ponged.add(ws);
+            if (ws.protocol !== '') {
+                return;
+            }
+            this.clients.add(ws);
             const id = newId();
             const sendWelcome = () => ws.send(welcomeType.toBuffer({
                 topic: ServerTopic.Welcome,
@@ -47,6 +50,7 @@ export class WebSocketServerRunner {
                             const player = gameServer.addPlayer(id, message.nickname, onDestroyed);
                             // If player was successfully added, broadcast
                             if (player) {
+                                console.debug(`Welcome ${player.nickname} (ID ${id})`);
                                 this.onPlayerAdded(id, player);
                             } else {
                                 ws.send(topicType.toBuffer(ServerTopic.NicknameAlreadyExists));
@@ -66,27 +70,15 @@ export class WebSocketServerRunner {
             ws.on('close', () => {
                 gameServer.onPlayerLoggedOut(id);
             });
-
-            ws.on('pong', () => this.ponged.add(ws));
         });
-
-        // Heartbeat
-        setInterval(() => {
-            for (const ws of wss.clients) {
-                if (this.ponged.delete(ws)) {
-                    ws.ping();
-                } else {
-                    console.log('Terminating connection because it did not respond to ping');
-                    ws.terminate();
-                }
-            }
-        }, 30000);
     }
 
     private broadcast<T>(type: Type<T>, message: T) {
         const buffer = type.toBuffer(message);
         for (const ws of this.wss.clients) {
-            ws.send(buffer);
+            if (this.clients.has(ws)) {
+                ws.send(buffer);
+            }
         }
     }
 

@@ -2,12 +2,13 @@ import http from 'http';
 import https from 'https';
 import fs from 'fs';
 import { AddressInfo, WebSocketServer } from 'ws';
-import { WebSocketServerRunner } from './WebSocketServer.js';
+import { GameWebSocketRunner } from './GameWebSocketRunner.js';
 import dotenv from 'dotenv';
 import { GameServer } from './GameServer.js';
 import { SweepAndPrune } from './collision/SweepAndPrune.js';
 import { delta } from './delta.js';
 import { AI } from './AI.js';
+import { webSocketHeartbeat } from './WebSocketHeartbeat.js';
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'production'}` })
 
 function sayHello(_req: any, res: any) {
@@ -33,8 +34,10 @@ const port = Number(process.env.PORT);
 const server = createServer();
 
 const gameServer = new GameServer(new SweepAndPrune());
-const webSocketServer = new WebSocketServerRunner(new WebSocketServer({ server }), gameServer);
-const ai = new AI(gameServer, webSocketServer);
+const wss = new WebSocketServer({ server });
+webSocketHeartbeat(wss);
+const webSocketServer = new GameWebSocketRunner(wss, gameServer);
+const ai = new AI(wss, gameServer, webSocketServer);
 
 // Using setImmediate so the tickrate can be read from the dotenv file.
 setImmediate(() =>

@@ -1,7 +1,8 @@
 import { Application } from "pixi.js";
 import { Renderer } from "./Renderer.js";
 import { addTopicListener } from "../WebSocketClient.js";
-import { GameUpdate, NewPlayer, ServerTopic, Welcome } from "dtos";
+import { AdminTopic, GameUpdate, NewPlayer, ServerTopic, SetAiParameters, Welcome, setAiParametersType, topicType } from "dtos";
+import { Buffer } from 'buffer';
 
 // Initialize rendering (Pixi.JS)
 const gameCanvas = document.getElementById("game-canvas") as HTMLCanvasElement;
@@ -85,3 +86,38 @@ addTopicListener(ServerTopic.NewPlayer, (newPlayer: NewPlayer) => {
 addTopicListener(ServerTopic.GameUpdate, (gameUpdate: GameUpdate) => {
     renderer.serverUpdate(gameUpdate);
 });
+
+// Connect to server
+console.debug('Connecting to', import.meta.env.VITE_WEBSOCKET_URL)
+const ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL, 'admin');
+ws.binaryType = 'arraybuffer';
+ws.addEventListener("error", console.error);
+
+ws.addEventListener("message", ({ data }) => {
+    const buffer = Buffer.from(data);
+    const parameters = setAiParametersType.fromBuffer(buffer);
+    for (const [key, value] of Object.entries(parameters)) {
+        if (key === 'topic') continue;
+        const slider = document.getElementById(key) as HTMLInputElement;
+        slider.valueAsNumber = value;
+        const text = document.getElementById(key + 'Text') as HTMLTableCellElement;
+        text.innerText = String(value);
+    }
+});
+
+for (let input of document.getElementsByTagName("input")!) {
+    input.addEventListener('change', () => {
+        const message: { [key: string]: number } = {
+            topic: AdminTopic.SetAiParameters
+        };
+        for (let input of document.getElementsByTagName("input")!) {
+            message[input.id] = input.valueAsNumber;
+        }
+        ws.send(setAiParametersType.toBuffer(message as SetAiParameters))
+    })
+}
+
+const reset = document.getElementById("reset") as HTMLButtonElement;
+reset.onclick = () => ws.send(topicType.toBuffer(AdminTopic.ResetAiParameters));
+const killBots = document.getElementById("kill-bots") as HTMLButtonElement;
+killBots.onclick = () => ws.send(topicType.toBuffer(AdminTopic.KillBots));

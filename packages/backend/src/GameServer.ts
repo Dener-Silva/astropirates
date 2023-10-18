@@ -27,9 +27,6 @@ export class GameServer {
         if (Object.values(this.players).some((p) => p.nickname === nickname)) {
             return null;
         }
-        if (process.env.NODE_ENV !== 'test') {
-            console.debug(`Welcome ${nickname} (ID ${id})`)
-        }
         const collider = new Polygon([-45, -30, -45, 30, 45, 0]);
         this.sweepAndPrune.add(collider);
         const player = new Player(id, nickname, collider, onDestroyed, ...randomPosition());
