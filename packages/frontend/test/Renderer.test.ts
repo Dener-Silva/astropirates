@@ -118,3 +118,14 @@ test('Player should blink while invulnerable', () => {
         expect(player.graphics.alpha).toBe(1);
     }
 });
+
+test('Do not add player twice', () => {
+    const app = new Application();
+    const renderer = new Renderer(app);
+
+    renderer.addPlayer('0', { nickname: "Technocat" });
+    const oldGraphics = renderer.playerGraphics['0'];
+    renderer.addPlayer('0', { nickname: "Technocat" });
+
+    expect(renderer.playerGraphics['0']).toBe(oldGraphics);
+});

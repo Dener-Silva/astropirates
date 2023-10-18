@@ -54,7 +54,6 @@ export class Renderer {
             const previousPosition = this.previousPlayers[id];
             let ship = this.playerGraphics[id];
             if (!ship) {
-                console.warn('playerGraphics not found for ID', id);
                 continue;
             }
             if (previousPosition) {
@@ -88,7 +87,6 @@ export class Renderer {
             const previousPosition = this.previousBullets[id];
             let bulletGraphics = this.bulletGraphics[id];
             if (!bulletGraphics) {
-                console.warn('bulletGraphics not found for ID', id);
                 continue;
             }
             if (previousPosition) {
@@ -102,9 +100,15 @@ export class Renderer {
     }
 
     addPlayer(id: string, newPlayer: PlayerAttributes) {
+        // Ignore if player is already created.
+        // May happen when client receives Welcome message and NewPlayer message at the same time.
+        if (this.playerGraphics[id]) {
+            return;
+        }
         // The player has their own layer, so they can't be drawn behind other players
         const layer = id === this.myId ? this.layers.player : this.layers.foreground;
         const ship = new ShipGraphics(newPlayer.nickname, layer);
+        ship.visible = false;
         this.playerGraphics[id] = ship;
     }
 
@@ -145,8 +149,10 @@ export class Renderer {
                 }
                 // Remove exploded/offline players
                 this.removePlayer(id);
+            } else if (this.playerGraphics[id]?.visible === false) {
+                // Player graphics are added on the event "NewPlayer".
+                this.playerGraphics[id].visible = true;
             }
-            // Player graphics are added on the event "NewPlayer".
         }
         for (const [id, bullet] of Object.entries(this.bullets)) {
             if (bullet.state >= GameObjectState.ToBeRemoved) {

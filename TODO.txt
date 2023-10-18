@@ -26,8 +26,8 @@
 			- Player/limit - OK
 		- Implement Scoreboard - OK
 		- Respawn invencibility - OK
-	- AI (To be expanded)
-	- Test screen to see server simulation in real time
+	- AI - OK
+	- Test screen to see server simulation in real time - OK
 	- Performance information screen
 - Front end
 	- Render (basic) - OK
@@ -78,5 +78,5 @@
             - Fetch from database
 - Docs (To be expanded)
 
-- Do not add palyergraphics twice
-- Only top3 on mobile
+- Do not add palyergraphics twice - OK
+- Only top3 on mobile - OK

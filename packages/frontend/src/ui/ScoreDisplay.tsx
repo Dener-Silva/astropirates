@@ -29,9 +29,10 @@ export const ScoreDisplay = () => {
             score: lastScore = score
         }));
     const myRow = rows.find(r => r.isMe);
-    const top6 = rows.slice(0, 6);
-    if (myRow && !top6.includes(myRow)) {
-        top6[5] = myRow;
+    const isMobile = window.matchMedia("((max-width: 576px) or (max-height: 600px))").matches;
+    const top = rows.slice(0, isMobile ? 3 : 6);
+    if (myRow && !top.includes(myRow)) {
+        top[top.length - 1] = myRow;
     }
 
     return (
@@ -39,7 +40,7 @@ export const ScoreDisplay = () => {
             <span>Scoreboard</span>
             <table>
                 <tbody>
-                    {top6.map((r) => (
+                    {top.map((r) => (
                         <tr key={r.id} style={r.isMe ? { fontWeight: 'bold' } : {}}>
                             <td>#{r.position} :</td>
                             <td>{r.nickname}</td>
