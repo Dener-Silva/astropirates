@@ -1,6 +1,6 @@
 import { ServerTopic, Welcome } from "dtos";
 import _React from "react";
-import { usePlayersNicknames, useScores, useSubscribeToTopic } from "../WebSocketClient";
+import { useScoreboard, useSubscribeToTopic } from "../WebSocketClient";
 
 /**
  * In-game score at the corner of the screen.
@@ -8,8 +8,7 @@ import { usePlayersNicknames, useScores, useSubscribeToTopic } from "../WebSocke
 export const ScoreDisplay = () => {
 
     const welcome = useSubscribeToTopic<Welcome>(ServerTopic.Welcome);
-    const scores = useScores();
-    const nicknames = usePlayersNicknames();
+    const scores = useScoreboard();
 
     if (!welcome) {
         return null;
@@ -21,11 +20,11 @@ export const ScoreDisplay = () => {
     let lastPosition = 0;
     const rows = Object.entries(scores)
         .sort((a, b) => b[1].score - a[1].score)
-        .map(([id, { score }]) => ({
+        .map(([id, { nickname: nickname, score }]) => ({
             id: id,
             isMe: id === myId,
             position: score === lastScore ? lastPosition : ++lastPosition,
-            nickname: nicknames[id]?.nickname,
+            nickname: nickname,
             score: lastScore = score
         }));
     const myRow = rows.find(r => r.isMe);

@@ -1,4 +1,4 @@
-import { GameUpdate, Input, Dictionary, ServerTopic, GameObjectState, ClientTopic } from 'dtos';
+import { GameUpdate, Input, Dictionary, ServerTopic, GameObjectState, FullGameUpdate, Score } from 'dtos';
 import { Player } from './Player.js';
 import { SweepAndPrune } from './collision/SweepAndPrune.js';
 import { Polygon } from './collision/colliders/Polygon.js';
@@ -18,31 +18,38 @@ function randomPosition() {
 export class GameServer {
     players: Dictionary<Player> = {};
     bullets: Dictionary<Bullet> = {};
+    scoreboard: Dictionary<Score> = {};
     inputBuffers: Dictionary<Input[]> = {};
     lastInputs: Dictionary<Input> = {};
 
     constructor(private sweepAndPrune: SweepAndPrune) { }
 
     addPlayer(id: string, nickname: string, onDestroyed: (byWhom: string) => void): Player | null {
-        if (Object.values(this.players).some((p) => p.nickname === nickname)) {
-            return null;
+        for (const [existingId, score] of Object.entries(this.scoreboard)) {
+            if (nickname === score.nickname && existingId !== id) return null;
         }
         const collider = new Polygon([-45, -30, -45, 30, 45, 0]);
         this.sweepAndPrune.add(collider);
-        const player = new Player(id, nickname, collider, onDestroyed, ...randomPosition());
+        const increaseScore = (byWhom: string) => {
+            // Player might already have logged out
+            if (this.scoreboard[byWhom]) {
+                this.scoreboard[byWhom].score += 100;
+            }
+            onDestroyed(byWhom);
+        }
+        const player = new Player(id, collider, increaseScore, ...randomPosition());
         this.players[id] = player;
+        this.scoreboard[id] = { nickname, score: 0 };
         this.inputBuffers[id] = [];
         return player;
     }
 
     onPlayerLoggedOut(id: string) {
-        if (process.env.NODE_ENV !== 'test') {
-            console.debug(`Bye ${this.players[id]?.nickname} (ID ${id})`)
-        }
         const player = this.players[id];
         if (player) {
             player.state = GameObjectState.Offline;
         }
+        delete this.scoreboard[id];
     }
 
     private removePlayer(id: string) {
@@ -51,6 +58,7 @@ export class GameServer {
         delete this.players[id];
         delete this.inputBuffers[id];
         delete this.lastInputs[id];
+        // Do not remove scores yet, only when the player is offline
     }
 
     registerInputs(id: string, input: Input) {
@@ -106,9 +114,9 @@ export class GameServer {
         }
 
         const state: GameUpdate = {
-            topic: ServerTopic.GameUpdate,
             players: this.players,
-            bullets: this.bullets
+            bullets: this.bullets,
+            scoreboard: this.scoreboard
         }
         return state;
     }

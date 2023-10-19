@@ -8,7 +8,7 @@ jest.mock('../src/delta.js', () => ({ delta: 50 }));
 jest.mock('../src/collision/colliders/Polygon.js')
 
 test('Should rotate correctly', () => {
-    const player = new Player('0', 'Test', new Polygon([]), () => { });
+    const player = new Player('0', new Polygon([]), () => { });
     const input: Input = {
         topic: ClientTopic.Input,
         angle: 0,
@@ -25,9 +25,9 @@ test('Should rotate correctly', () => {
 });
 
 test('Should die to bullet', () => {
-    const player = new Player('0', 'Test', new Polygon([]), () => { });
+    const player = new Player('0', new Polygon([]), () => { });
     player.state = GameObjectState.Active;
-    const player2 = new Player('1', 'Test2', new Polygon([]), () => { });
+    const player2 = new Player('1', new Polygon([]), () => { });
     player2.state = GameObjectState.Active;
     const bullet = player2.shoot();
 
@@ -38,10 +38,10 @@ test('Should die to bullet', () => {
 
 test('Should call onScoreChanged', () => {
     const onDestroyed1 = jest.fn();
-    const player1 = new Player('0', 'Test1', new Polygon([]), onDestroyed1);
+    const player1 = new Player('0', new Polygon([]), onDestroyed1);
     player1.state = GameObjectState.Active;
     const onDestroyed2 = jest.fn();
-    const player2 = new Player('1', 'Test2', new Polygon([]), onDestroyed2);
+    const player2 = new Player('1', new Polygon([]), onDestroyed2);
     player2.state = GameObjectState.Active;
     const bullet = player2.shoot();
 
@@ -53,7 +53,7 @@ test('Should call onScoreChanged', () => {
 });
 
 test('Should not die to own bullet', () => {
-    const player = new Player('0', 'Test', new Polygon([]), () => { });
+    const player = new Player('0', new Polygon([]), () => { });
     player.state = GameObjectState.Active;
     const bullet = player.shoot();
 
@@ -63,7 +63,7 @@ test('Should not die to own bullet', () => {
 });
 
 test('Should add own speed to bullet speed', () => {
-    const player = new Player('0', 'Test', new Polygon([]), () => { });
+    const player = new Player('0', new Polygon([]), () => { });
     player.ySpeed = 10;
     const bullet = player.shoot();
 
@@ -76,7 +76,7 @@ test.each([
     [0, 1600, Math.PI / 2],
     [0, -1600, -Math.PI / 2],
 ])('Limit distance without killing the speed: x:%f, y:%f, angle:%f', (x, y, angle) => {
-    const player = new Player('0', 'Test', new Polygon([]), () => { });
+    const player = new Player('0', new Polygon([]), () => { });
     player.x = x;
     player.y = y;
     player.rotation = angle;
@@ -94,7 +94,7 @@ test.each([
 });
 
 test('Should be invulnerable on the start', () => {
-    const player = new Player('0', 'Test', new Polygon([]), () => { });
+    const player = new Player('0', new Polygon([]), () => { });
 
     let invulnerableTime = player.invulnerableTimer;
     for (let i = delta; i < invulnerableTime; i += delta) {
@@ -107,8 +107,8 @@ test('Should be invulnerable on the start', () => {
 });
 
 test('Should not die while invulnerable', () => {
-    const player = new Player('0', 'Test', new Polygon([]), () => { });
-    const player2 = new Player('1', 'Test2', new Polygon([]), () => { });
+    const player = new Player('0', new Polygon([]), () => { });
+    const player2 = new Player('1', new Polygon([]), () => { });
     const bullet = player2.shoot();
 
     player.onCollision(bullet);

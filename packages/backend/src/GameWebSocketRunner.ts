@@ -1,10 +1,9 @@
-import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, gameUpdateType, welcomeType, newPlayerType, destroyedType, GameUpdate } from "dtos";
+import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, fullGameUpdateType, destroyedType, welcomeType, FullGameUpdate } from "dtos";
 import { WebSocketServer, WebSocket } from "ws";
 import { GameServer } from "./GameServer.js";
 import { tickrate } from './delta.js';
 import { newId } from "./newId.js";
 import { Type } from "avro-js";
-import { Player } from "./Player.js";
 
 export class GameWebSocketRunner {
 
@@ -21,8 +20,7 @@ export class GameWebSocketRunner {
             const sendWelcome = () => ws.send(welcomeType.toBuffer({
                 topic: ServerTopic.Welcome,
                 tickrate,
-                id,
-                players: gameServer.players
+                id
             }));
             // Hack: Delay first message on dev environment
             // TODO: Fix race condition where the client receives the "welcome" message before all
@@ -48,10 +46,8 @@ export class GameWebSocketRunner {
                             }
                             // Try to add player to the server
                             const player = gameServer.addPlayer(id, message.nickname, onDestroyed);
-                            // If player was successfully added, broadcast
                             if (player) {
-                                console.debug(`Welcome ${player.nickname} (ID ${id})`);
-                                this.onPlayerAdded(id, player);
+                                console.debug(`Welcome ${gameServer.scoreboard[id]?.nickname} (ID ${id})`);
                             } else {
                                 ws.send(topicType.toBuffer(ServerTopic.NicknameAlreadyExists));
                             }
@@ -68,6 +64,9 @@ export class GameWebSocketRunner {
             });
 
             ws.on('close', () => {
+                if (process.env.NODE_ENV !== 'test') {
+                    console.debug(`Bye ${gameServer.scoreboard[id]?.nickname} (ID ${id})`)
+                }
                 gameServer.onPlayerLoggedOut(id);
             });
         });
@@ -82,15 +81,8 @@ export class GameWebSocketRunner {
         }
     }
 
-    onGameUpdate(gameUpdate: GameUpdate) {
-        this.broadcast(gameUpdateType, gameUpdate);
+    onGameUpdate(gameUpdate: FullGameUpdate) {
+        this.broadcast(fullGameUpdateType, gameUpdate);
     }
 
-    onPlayerAdded(id: string, player: Player) {
-        this.broadcast(newPlayerType, {
-            topic: ServerTopic.NewPlayer,
-            id,
-            player
-        });
-    }
 }

@@ -1,7 +1,7 @@
 import { Application } from "pixi.js";
 import { Renderer } from "./Renderer.js";
 import { addTopicListener } from "../WebSocketClient.js";
-import { AdminTopic, GameUpdate, NewPlayer, ServerTopic, SetAiParameters, Welcome, setAiParametersType, topicType } from "dtos";
+import { AdminTopic, GameUpdate, ServerTopic, SetAiParameters, Welcome, setAiParametersType, topicType } from "dtos";
 import { Buffer } from 'buffer';
 
 // Initialize rendering (Pixi.JS)
@@ -74,13 +74,6 @@ addEventListener('mouseup', () => isDragging = false);
 // Subscribe to WebSocket messages
 addTopicListener(ServerTopic.Welcome, (welcome: Welcome) => {
     renderer.serverDelta = 1000 / welcome.tickrate;
-    Object.entries(welcome.players).forEach(([id, player]) => {
-        renderer.addPlayer(id, player);
-    });
-});
-
-addTopicListener(ServerTopic.NewPlayer, (newPlayer: NewPlayer) => {
-    renderer.addPlayer(newPlayer.id, newPlayer.player);
 });
 
 addTopicListener(ServerTopic.GameUpdate, (gameUpdate: GameUpdate) => {

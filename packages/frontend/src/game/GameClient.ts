@@ -2,7 +2,7 @@ import { Application } from "pixi.js";
 import { inputSystemInstance } from "./InputSystem.js";
 import { Renderer } from "./Renderer.js";
 import { addTopicListener, sendMessage } from "../WebSocketClient.js";
-import { GameUpdate, NewPlayer, ServerTopic, Welcome, inputType } from "dtos";
+import { GameUpdate, ServerTopic, Welcome, inputType } from "dtos";
 import { isMultiTouch } from "../isMultiTouch.js";
 
 // Initialize rendering (Pixi.JS)
@@ -63,13 +63,6 @@ let myId: string | undefined;
 addTopicListener(ServerTopic.Welcome, (welcome: Welcome) => {
     renderer.myId = myId = welcome.id;
     renderer.serverDelta = 1000 / welcome.tickrate;
-    Object.entries(welcome.players).forEach(([id, player]) => {
-        renderer.addPlayer(id, player);
-    });
-});
-
-addTopicListener(ServerTopic.NewPlayer, (newPlayer: NewPlayer) => {
-    renderer.addPlayer(newPlayer.id, newPlayer.player);
 });
 
 addTopicListener(ServerTopic.GameUpdate, (gameUpdate: GameUpdate) => {

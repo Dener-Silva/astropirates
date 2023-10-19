@@ -1,4 +1,4 @@
-import { GameObjectState, GameUpdate, NewPlayer, ServerTopic, Welcome, gameUpdateType, newPlayerType, destroyedType, welcomeType, Destroyed } from "../src/ServerMessage.js";
+import { GameObjectState, ServerTopic, FullGameUpdate, destroyedType, fullGameUpdateType, Destroyed, Welcome, welcomeType, PartialGameUpdate, partialGameUpdateType, GameUpdate, gameUpdateType } from "../src/ServerMessage.js";
 import { toBeDeepCloseTo } from 'jest-matcher-deep-close-to';
 expect.extend({ toBeDeepCloseTo });
 
@@ -6,11 +6,7 @@ test('Compare before and after serialization (Welcome)', () => {
     const message: Welcome = {
         topic: ServerTopic.Welcome,
         tickrate: 33.33333,
-        id: '0',
-        players: {
-            0: { nickname: "Technocat" },
-            1: { nickname: "You" },
-        }
+        id: '0'
     }
 
     const buf = welcomeType.toBuffer(message);
@@ -21,14 +17,17 @@ test('Compare before and after serialization (Welcome)', () => {
 
 test('Compare before and after serialization (GameUpdate)', () => {
     const message: GameUpdate = {
-        topic: ServerTopic.GameUpdate,
         players: {
-            0: { state: GameObjectState.Active, x: 12.3, y: 23.4, rotation: Math.PI, score: 100 },
-            1: { state: GameObjectState.Active, x: 34.5, y: 45.6, rotation: -Math.PI, score: 200 },
+            0: { state: GameObjectState.Active, x: 12.3, y: 23.4, rotation: Math.PI },
+            1: { state: GameObjectState.Active, x: 34.5, y: 45.6, rotation: -Math.PI },
         },
         bullets: {
             2: { state: GameObjectState.Active, x: 56.7, y: 67.8 },
             3: { state: GameObjectState.Expired, x: 78.9, y: 89.1 },
+        },
+        scoreboard: {
+            0: { nickname: 'Player 1', score: 0 },
+            1: { nickname: 'Player 2', score: 100 },
         }
     }
 
@@ -38,15 +37,37 @@ test('Compare before and after serialization (GameUpdate)', () => {
     expect(result).toBeDeepCloseTo(message);
 });
 
-test('Compare before and after serialization (NewPlayer)', () => {
-    const message: NewPlayer = {
-        topic: ServerTopic.NewPlayer,
-        id: '0',
-        player: { nickname: "Technocat" }
+test('Compare before and after serialization (FullGameUpdate)', () => {
+    const message: FullGameUpdate = {
+        topic: ServerTopic.FullGameUpdate,
+        players: {
+            0: { state: GameObjectState.Active, x: 12.3, y: 23.4, rotation: Math.PI },
+            1: { state: GameObjectState.Active, x: 34.5, y: 45.6, rotation: -Math.PI },
+        },
+        bullets: {
+            2: { state: GameObjectState.Active, x: 56.7, y: 67.8 },
+            3: { state: GameObjectState.Expired, x: 78.9, y: 89.1 },
+        },
+        scoreboard: {
+            0: { nickname: 'Player 1', score: 0 },
+            1: { nickname: 'Player 2', score: 100 },
+        }
     }
 
-    const buf = newPlayerType.toBuffer(message);
-    const result = newPlayerType.fromBuffer(buf);
+    const buf = fullGameUpdateType.toBuffer(message);
+    const result = fullGameUpdateType.fromBuffer(buf);
+
+    expect(result).toBeDeepCloseTo(message);
+});
+
+test('Compare before and after serialization (PartialGameUpdate)', () => {
+    const message: PartialGameUpdate = {
+        topic: ServerTopic.PartialGameUpdate,
+        data: Buffer.from('Pretend this is binary data')
+    }
+
+    const buf = partialGameUpdateType.toBuffer(message);
+    const result = partialGameUpdateType.fromBuffer(buf);
 
     expect(result).toEqual(message);
 });

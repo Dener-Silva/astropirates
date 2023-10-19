@@ -1,5 +1,5 @@
 import _React, { useContext, useRef, useState } from "react";
-import { usePlayersNicknames, useSubscribeToTopic } from "../WebSocketClient";
+import { useScoreboard, useSubscribeToTopic } from "../WebSocketClient";
 import { Destroyed, ServerTopic } from "dtos";
 import { GameState, GameStateContext } from "./GameStateContext";
 
@@ -7,7 +7,7 @@ export const DeathScreen = () => {
 
     const [gameState, setGameState] = useContext(GameStateContext);
     const lastKnownNickname = useRef("");
-    const nicknames = usePlayersNicknames();
+    const scoreboard = useScoreboard();
     const destroyed = useSubscribeToTopic<Destroyed>(ServerTopic.Destroyed);
     const display = gameState === GameState.Destroyed ? "" : "none";
     const [continueClicked, setContinueClicked] = useState(false);
@@ -15,8 +15,8 @@ export const DeathScreen = () => {
     // Enemy might log out, whick can cause problems.
     // In that case, we save the nickname
     let enemyNickname = lastKnownNickname.current;
-    if (destroyed?.byWhom && nicknames[destroyed.byWhom]) {
-        enemyNickname = nicknames[destroyed.byWhom].nickname;
+    if (destroyed?.byWhom && scoreboard[destroyed.byWhom]) {
+        enemyNickname = scoreboard[destroyed.byWhom].nickname;
         lastKnownNickname.current = enemyNickname;
     }
     const animation = continueClicked ? "close 1000ms forwards" : "open 1000ms forwards";

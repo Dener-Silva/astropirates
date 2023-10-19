@@ -1,5 +1,5 @@
 import { Application, Container } from "pixi.js";
-import { Dictionary, GameUpdate, Player, angleLerp, lerp, GameObjectState, Bullet, PlayerAttributes } from "dtos";
+import { Dictionary, GameUpdate, Player, angleLerp, lerp, GameObjectState, Bullet } from "dtos";
 import { ShipGraphics } from "./rendering/ShipGraphics.js";
 import { Stars } from "./rendering/Stars.js";
 import { BulletGraphics } from "./rendering/BulletGraphics.js";
@@ -99,16 +99,11 @@ export class Renderer {
         }
     }
 
-    addPlayer(id: string, newPlayer: PlayerAttributes) {
-        // Ignore if player is already created.
-        // May happen when client receives Welcome message and NewPlayer message at the same time.
-        if (this.playerGraphics[id]) {
-            return;
-        }
+    private addPlayer(id: string, player: Player, nickname: string) {
         // The player has their own layer, so they can't be drawn behind other players
         const layer = id === this.myId ? this.layers.player : this.layers.foreground;
-        const ship = new ShipGraphics(newPlayer.nickname, layer);
-        ship.visible = false;
+        const ship = new ShipGraphics(nickname, layer);
+        ship.position.set(player.x, player.y);
         this.playerGraphics[id] = ship;
     }
 
@@ -149,9 +144,8 @@ export class Renderer {
                 }
                 // Remove exploded/offline players
                 this.removePlayer(id);
-            } else if (this.playerGraphics[id]?.visible === false) {
-                // Player graphics are added on the event "NewPlayer".
-                this.playerGraphics[id].visible = true;
+            } else if (!this.playerGraphics[id]) {
+                this.addPlayer(id, player, gameUpdate.scoreboard[id].nickname)
             }
         }
         for (const [id, bullet] of Object.entries(this.bullets)) {
@@ -163,8 +157,7 @@ export class Renderer {
                 this.removeBullet(id);
             } else {
                 // Add new bullets
-                let bulletGraphics = this.bulletGraphics[id];
-                if (!bulletGraphics) {
+                if (!this.bulletGraphics[id]) {
                     this.bulletGraphics[id] = new BulletGraphics(this.layers.foreground);
                 }
             }

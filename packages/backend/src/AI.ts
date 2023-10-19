@@ -105,7 +105,10 @@ export class AI {
                 const collider = this.players[id];
                 this.sap.remove(collider);
                 delete this.players[id];
-                delete this.actors[id];
+                if (this.actors[id]) {
+                    delete this.actors[id];
+                    this.gameServer.onPlayerLoggedOut(id);
+                }
             }
         }
 
@@ -167,7 +170,6 @@ export class AI {
             const collider = this.players[id] = new Circle(this.aiParameters.aiVisionDistance);
             collider.owner = player;
             this.sap.add(collider);
-            this.webSocketServer.onPlayerAdded(id, player);
             this.actors[id] = {
                 state: ActorState.Idle,
                 targetAngle: randomAngle(),

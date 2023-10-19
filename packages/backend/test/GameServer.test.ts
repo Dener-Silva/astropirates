@@ -130,12 +130,10 @@ test('Adding player twice should be idempotent', () => {
     gameServer.update();
     gameServer.cleanup();
     const player2 = gameServer.addPlayer('0', 'Technocat', () => { });
-    const result = gameServer.update();
 
     expect(player2).toBeTruthy();
-    expect(player2?.nickname).toEqual('Technocat');
-    expect(result.players[0]).toBe(player2);
-    expect(Object.keys(result.players)).toHaveLength(1);
+    expect(gameServer.scoreboard['0']).toBeTruthy();
+    expect(gameServer.scoreboard['0'].nickname).toEqual('Technocat');
     expect(add).toHaveBeenCalledTimes(2);
     expect(add).toHaveBeenCalledWith(player!.collider);
     expect(add).toHaveBeenCalledWith(player2!.collider);
@@ -149,27 +147,28 @@ test('Should update the nickname', () => {
     // Simulate actual lifecycle
     const player = gameServer.addPlayer('0', 'Old Nickname', () => { });
     player!.state = GameObjectState.Exploded;
-    gameServer.update()
+    gameServer.update();
+    gameServer.cleanup();
     const player2 = gameServer.addPlayer('0', 'New Nickname', () => { });
     const result = gameServer.update();
 
     expect(player2).toBeTruthy();
-    expect(player2?.nickname).toEqual('New Nickname');
     expect(result.players[0]).toBe(player2);
+    expect(result.scoreboard[0].nickname).toBe('New Nickname');
     expect(Object.keys(result.players)).toHaveLength(1);
 });
 
 test("Should remove dead players's nickname after they log out", () => {
     const gameServer = new GameServer(new SweepAndPrune());
 
-    const player = gameServer.addPlayer('0', 'Technocat', () => { });
-    expect(player).not.toBeNull();
-    player!.state = GameObjectState.Exploded;
+    gameServer.addPlayer('0', 'Technocat', () => { });
+    gameServer.onPlayerLoggedOut('0');
     gameServer.cleanup();
-    let result = gameServer.addPlayer('0', 'Technocat', () => { });
+    const player = gameServer.addPlayer('0', 'Technocat', () => { });
+    let result = gameServer.update();
 
-    expect(result).not.toBeNull();
-    expect(result!.nickname).toEqual('Technocat');
+    expect(player).toBeTruthy();
+    expect(result.scoreboard['0'].nickname).toEqual('Technocat');
 });
 
 test("Buffer inputs", () => {

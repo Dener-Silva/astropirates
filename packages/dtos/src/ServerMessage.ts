@@ -2,26 +2,17 @@ import avro from 'avro-js';
 
 export enum ServerTopic {
     Welcome,
-    NicknameAlreadyExists,
-    NewPlayer,
     GameUpdate,
+    FullGameUpdate,
+    PartialGameUpdate,
+    NicknameAlreadyExists,
     Destroyed,
 }
 
-export type PlayerAttributes = { nickname: string }
 export type Welcome = {
     topic: ServerTopic.Welcome
     id: string
     tickrate: number
-    players: Dictionary<PlayerAttributes>
-}
-
-const playerAttributesSchema = {
-    name: "Player",
-    type: "record",
-    fields: [
-        { name: "nickname", type: "string" }
-    ]
 }
 
 export const welcomeType = avro.parse<Welcome>({
@@ -30,13 +21,7 @@ export const welcomeType = avro.parse<Welcome>({
     fields: [
         { name: "topic", type: "int" },
         { name: "id", type: "string" },
-        { name: "tickrate", type: "double" },
-        {
-            name: "players", type: {
-                type: "map",
-                values: playerAttributesSchema
-            }
-        }
+        { name: "tickrate", type: "double" }
     ]
 });
 
@@ -49,66 +34,91 @@ export enum GameObjectState {
     Offline,
     Exploded
 }
-export type Player = { state: GameObjectState, x: number, y: number, rotation: number, score: number }
-export type Bullet = { state: GameObjectState, x: number, y: number }
+
 export type Dictionary<T> = { [id: string]: T }
+export type Player = { state: GameObjectState, x: number, y: number, rotation: number }
+export type Bullet = { state: GameObjectState, x: number, y: number }
+export type Score = { nickname: string, score: number }
 export type GameUpdate = {
-    topic: ServerTopic.GameUpdate
     players: Dictionary<Player>
     bullets: Dictionary<Bullet>
+    scoreboard: Dictionary<Score>
 }
 
+const gameUpdateFields = [
+    {
+        name: "players", type: {
+            type: "map",
+            values: {
+                name: "Player",
+                type: "record",
+                fields: [
+                    { name: "state", type: "int" },
+                    { name: "x", type: "float" },
+                    { name: "y", type: "float" },
+                    { name: "rotation", type: "float" },
+                ]
+            }
+        }
+    },
+    {
+        name: "bullets", type: {
+            type: "map",
+            values: {
+                name: "Bullet",
+                type: "record",
+                fields: [
+                    { name: "state", type: "int" },
+                    { name: "x", type: "float" },
+                    { name: "y", type: "float" }
+                ]
+            }
+        }
+    },
+    {
+        name: "scoreboard", type: {
+            type: "map",
+            values: {
+                name: "Score",
+                type: "record",
+                fields: [
+                    { name: "nickname", type: "string" },
+                    { name: "score", type: "long" }
+                ]
+            }
+        }
+    }
+]
 export const gameUpdateType = avro.parse<GameUpdate>({
     type: "record",
     name: "GameUpdate",
+    fields: gameUpdateFields
+});
+
+export type FullGameUpdate = {
+    topic: ServerTopic.FullGameUpdate
+} & GameUpdate;
+
+export const fullGameUpdateType = avro.parse<FullGameUpdate>({
+    type: "record",
+    name: "FullGameUpdate",
     fields: [
         { name: "topic", type: "int" },
-        {
-            name: "players", type: {
-                type: "map",
-                values: {
-                    name: "Player",
-                    type: "record",
-                    fields: [
-                        { name: "state", type: "int" },
-                        { name: "x", type: "float" },
-                        { name: "y", type: "float" },
-                        { name: "rotation", type: "float" },
-                        { name: "score", type: "int" },
-                    ]
-                }
-            }
-        },
-        {
-            name: "bullets", type: {
-                type: "map",
-                values: {
-                    name: "Bullets",
-                    type: "record",
-                    fields: [
-                        { name: "state", type: "int" },
-                        { name: "x", type: "float" },
-                        { name: "y", type: "float" }
-                    ]
-                }
-            }
-        }
+        ...gameUpdateFields
     ]
 });
 
-export type NewPlayer = {
-    topic: ServerTopic.NewPlayer
-    id: string
-    player: PlayerAttributes
-}
+export type PartialGameUpdate = {
+    topic: ServerTopic.PartialGameUpdate
+    data: ArrayBufferLike
+};
 
-export const newPlayerType = avro.parse<NewPlayer>({
+export const partialGameUpdateType = avro.parse<PartialGameUpdate>({
     type: "record",
-    name: "NewPlayer",
+    name: "PartialGameUpdate",
     fields: [
         { name: "topic", type: "int" },
-        { name: "id", type: "string" },
-        { name: "player", type: playerAttributesSchema },
+        { name: "data", type: 'bytes' }
     ]
 });
 

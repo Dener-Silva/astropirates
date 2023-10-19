@@ -22,11 +22,9 @@ export class Player implements ObjectWithCollider {
     rotation = Math.PI / 2;
     invulnerableTimer = 3000;
     shootTimer = 0;
-    score = 0;
 
     constructor(
         public id: string,
-        public nickname: string,
         public collider: Polygon,
         public onDestroyed: (byWhom: string) => void,
         public x = 0,
@@ -73,7 +71,6 @@ export class Player implements ObjectWithCollider {
     onCollision(other: ObjectWithCollider): void {
         if (other instanceof Bullet) {
             if (this.state !== GameObjectState.Invulnerable && other.owner !== this) {
-                other.owner.score += 100;
                 this.onDestroyed(other.owner.id);
                 this.state = GameObjectState.Exploded;
             }

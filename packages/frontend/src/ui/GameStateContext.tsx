@@ -1,6 +1,6 @@
 import _React, { Dispatch, PropsWithChildren, SetStateAction, createContext, useEffect, useRef, useState } from 'react'
 import { addTopicListener, removeTopicListener } from '../WebSocketClient';
-import { GameObjectState, GameUpdate, NewPlayer, ServerTopic, Welcome } from 'dtos';
+import { GameObjectState, GameUpdate, ServerTopic, Welcome } from 'dtos';
 
 export enum GameState {
     StartScreen,
@@ -21,23 +21,22 @@ export const GameStateProvider = (props: PropsWithChildren) => {
     const welcomeCallback = (welcome: Welcome) => {
         myIdRef.current = welcome.id;
     }
-    const newPlayerCallback = (newPlayer: NewPlayer) => {
-        if (newPlayer.id === myIdRef.current) {
-            setGameState(GameState.InGame);
-        }
-    }
     const gameUpdateCallback = (gameUpdate: GameUpdate) => {
-        if (gameUpdate.players[myIdRef.current]?.state >= GameObjectState.ToBeRemoved) {
+        const me = gameUpdate.players[myIdRef.current];
+        if (!me) {
+            return;
+        }
+        if (me.state < GameObjectState.ToBeRemoved) {
+            setGameState(GameState.InGame);
+        } else {
             setGameState(GameState.Destroyed);
         }
     }
     useEffect(() => {
         addTopicListener(ServerTopic.Welcome, welcomeCallback);
-        addTopicListener(ServerTopic.NewPlayer, newPlayerCallback);
         addTopicListener(ServerTopic.GameUpdate, gameUpdateCallback);
         return () => {
             removeTopicListener(ServerTopic.Welcome, welcomeCallback);
-            removeTopicListener(ServerTopic.NewPlayer, newPlayerCallback);
             removeTopicListener(ServerTopic.GameUpdate, gameUpdateCallback);
         }
     }, []);
