@@ -1,13 +1,15 @@
-import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, fullGameUpdateType, destroyedType, welcomeType, FullGameUpdate } from "dtos";
+import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, fullGameUpdateType, destroyedType, welcomeType, FullGameUpdate, GameUpdate, gameUpdateType, partialGameUpdateType } from "dtos";
 import { WebSocketServer, WebSocket } from "ws";
 import { GameServer } from "./GameServer.js";
 import { tickrate } from './delta.js';
 import { newId } from "./newId.js";
-import { Type } from "avro-js";
+import fossilDelta from "fossil-delta";
 
 export class GameWebSocketRunner {
 
     readonly clients = new WeakSet<WebSocket>();
+    readonly needsFullUpdate = new WeakSet<WebSocket>();
+    previousGameUpdate = Buffer.from([]);
 
     constructor(private wss: WebSocketServer, gameServer: GameServer) {
         wss.on('connection', (ws) => {
@@ -15,13 +17,16 @@ export class GameWebSocketRunner {
             if (ws.protocol !== '') {
                 return;
             }
-            this.clients.add(ws);
             const id = newId();
-            const sendWelcome = () => ws.send(welcomeType.toBuffer({
-                topic: ServerTopic.Welcome,
-                tickrate,
-                id
-            }));
+            const sendWelcome = () => {
+                this.clients.add(ws);
+                this.needsFullUpdate.add(ws);
+                ws.send(welcomeType.toBuffer({
+                    topic: ServerTopic.Welcome,
+                    tickrate,
+                    id
+                }));
+            };
             // Hack: Delay first message on dev environment
             // TODO: Fix race condition where the client receives the "welcome" message before all
             // React components are mounted.
@@ -72,17 +77,27 @@ export class GameWebSocketRunner {
         });
     }
 
-    private broadcast<T>(type: Type<T>, message: T) {
-        const buffer = type.toBuffer(message);
+    onGameUpdate(gameUpdate: GameUpdate) {
+        const fullGameUpdate = fullGameUpdateType.toBuffer({
+            topic: ServerTopic.FullGameUpdate,
+            ...gameUpdate
+        })
+        const gameUpdateBuffer = gameUpdateType.toBuffer(gameUpdate);
+        const delta = Buffer.from(fossilDelta.create(this.previousGameUpdate, gameUpdateBuffer));
+        const partialGameUpdate = partialGameUpdateType.toBuffer({
+            topic: ServerTopic.PartialGameUpdate,
+            delta
+        })
         for (const ws of this.wss.clients) {
             if (this.clients.has(ws)) {
-                ws.send(buffer);
+                if (this.needsFullUpdate.delete(ws)) {
+                    ws.send(fullGameUpdate);
+                } else {
+                    ws.send(partialGameUpdate);
+                }
             }
         }
-    }
-
-    onGameUpdate(gameUpdate: FullGameUpdate) {
-        this.broadcast(fullGameUpdateType, gameUpdate);
+        this.previousGameUpdate = gameUpdateBuffer;
     }
 
 }

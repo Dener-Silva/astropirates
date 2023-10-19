@@ -1,7 +1,9 @@
 import { Type } from "avro-js";
-import { GameUpdate, NeverError, ServerTopic, destroyedType, topicType, welcomeType, Dictionary, fullGameUpdateType, Score } from "dtos";
+import { GameUpdate, NeverError, ServerTopic, destroyedType, topicType, welcomeType, Dictionary, fullGameUpdateType, Score, partialGameUpdateType, gameUpdateType } from "dtos";
 import _react, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Buffer } from "buffer";
+window.Buffer = Buffer;
+import fossilDelta from "fossil-delta";
 
 // Connect to server
 console.debug('Connecting to', import.meta.env.VITE_WEBSOCKET_URL)
@@ -38,6 +40,8 @@ export function removeTopicListener<T = any>(topic: ServerTopic, callback: (mess
     }
 }
 
+let gameUpdateBuffer: Buffer | number[] = [];
+
 ws.addEventListener("message", ({ data }) => {
     const buffer = Buffer.from(data);
     const topic: ServerTopic = topicType.fromBuffer(buffer, undefined, true);
@@ -54,11 +58,18 @@ ws.addEventListener("message", ({ data }) => {
             break;
         case ServerTopic.FullGameUpdate:
             const fullGameUpdate = fullGameUpdateType.fromBuffer(buffer);
+            // Chop off the topic from the start of the buffer (topic is 1 byte)
+            gameUpdateBuffer = buffer.subarray(1);
             listeners[ServerTopic.GameUpdate].forEach((c) => c(fullGameUpdate));
             listeners[ServerTopic.FullGameUpdate].forEach((c) => c(fullGameUpdate));
             break;
         case ServerTopic.PartialGameUpdate:
-            throw new Error('Not implemented');
+            const partialGameUpdate = partialGameUpdateType.fromBuffer(buffer);
+            gameUpdateBuffer = fossilDelta.apply(gameUpdateBuffer, partialGameUpdate.delta);
+            const gameUpdate = gameUpdateType.fromBuffer(Buffer.from(gameUpdateBuffer));
+            listeners[ServerTopic.GameUpdate].forEach((c) => c(gameUpdate));
+            listeners[ServerTopic.PartialGameUpdate].forEach((c) => c(gameUpdate));
+            break;
         case (ServerTopic.Destroyed):
             const destroyed = destroyedType.fromBuffer(buffer);
             listeners[topic].forEach((c) => c(destroyed));

@@ -110,7 +110,7 @@ export const fullGameUpdateType = avro.parse<FullGameUpdate>({
 
 export type PartialGameUpdate = {
     topic: ServerTopic.PartialGameUpdate
-    data: ArrayBufferLike
+    delta: any
 };
 
 export const partialGameUpdateType = avro.parse<PartialGameUpdate>({
@@ -118,7 +118,7 @@ export const partialGameUpdateType = avro.parse<PartialGameUpdate>({
     name: "PartialGameUpdate",
     fields: [
         { name: "topic", type: "int" },
-        { name: "data", type: 'bytes' }
+        { name: "delta", type: 'bytes' }
     ]
 });
 

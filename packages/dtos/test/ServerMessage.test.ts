@@ -63,7 +63,7 @@ test('Compare before and after serialization (FullGameUpdate)', () => {
 test('Compare before and after serialization (PartialGameUpdate)', () => {
     const message: PartialGameUpdate = {
         topic: ServerTopic.PartialGameUpdate,
-        data: Buffer.from('Pretend this is binary data')
+        delta: Buffer.from('Pretend this is binary data')
     }
 
     const buf = partialGameUpdateType.toBuffer(message);
