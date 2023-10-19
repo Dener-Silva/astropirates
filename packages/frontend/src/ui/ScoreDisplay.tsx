@@ -20,10 +20,10 @@ export const ScoreDisplay = () => {
     let lastPosition = 0;
     const rows = Object.entries(scores)
         .sort((a, b) => b[1].score - a[1].score)
-        .map(([id, { nickname: nickname, score }]) => ({
+        .map(([id, { nickname: nickname, score }], i) => ({
             id: id,
             isMe: id === myId,
-            position: score === lastScore ? lastPosition : ++lastPosition,
+            position: score === lastScore ? lastPosition : lastPosition = i + 1,
             nickname: nickname,
             score: lastScore = score
         }));
