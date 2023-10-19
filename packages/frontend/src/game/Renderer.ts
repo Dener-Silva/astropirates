@@ -39,6 +39,7 @@ export class Renderer {
             explosions: new Container(),
         }
 
+        app.stage.interactiveChildren = false;
         app.stage.addChild(...Object.values(this.layers));
         this.stars = new Stars(this.layers.background);
         this.asteroidBelt = new AsteroidBelt(this.layers.background);
