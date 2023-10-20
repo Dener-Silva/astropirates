@@ -1,4 +1,4 @@
-import { GameObjectState, ServerTopic, FullGameUpdate, destroyedType, fullGameUpdateType, Destroyed, Welcome, welcomeType, PartialGameUpdate, partialGameUpdateType, GameUpdate, gameUpdateType } from "../src/ServerMessage.js";
+import { GameObjectState, ServerTopic, FullGameUpdate, destroyedType, fullGameUpdateType, Destroyed, Welcome, welcomeType, PartialGameUpdate, partialGameUpdateType, GameUpdate, gameUpdateType, Leaderboard, leaderboardType } from "../src/ServerMessage.js";
 import { toBeDeepCloseTo } from 'jest-matcher-deep-close-to';
 expect.extend({ toBeDeepCloseTo });
 
@@ -80,6 +80,28 @@ test('Compare before and after serialization (Destroyed)', () => {
 
     const buf = destroyedType.toBuffer(message);
     const result = destroyedType.fromBuffer(buf);
+
+    expect(result).toEqual(message);
+});
+
+test('Compare before and after serialization (Leaderboard)', () => {
+    const message: Leaderboard = {
+        topic: ServerTopic.Leaderboard,
+        offset: 100,
+        rows: [
+            {
+                id: 24n,
+                name: 'Technocat',
+                score: 100n,
+                ts: new Date('2023-10-19T23:13:44.000Z'),
+                rank: 1n
+            }
+        ],
+        count: 1n
+    }
+
+    const buf = leaderboardType.toBuffer(message);
+    const result = leaderboardType.fromBuffer(buf);
 
     expect(result).toEqual(message);
 });

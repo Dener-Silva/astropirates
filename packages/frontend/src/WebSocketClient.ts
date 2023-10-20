@@ -1,9 +1,11 @@
 import { Type } from "avro-js";
-import { GameUpdate, NeverError, ServerTopic, destroyedType, topicType, welcomeType, Dictionary, fullGameUpdateType, Score, partialGameUpdateType, gameUpdateType } from "dtos";
+import { GameUpdate, NeverError, ServerTopic, destroyedType, topicType, welcomeType, Dictionary, fullGameUpdateType, Score, partialGameUpdateType, gameUpdateType, leaderboardType } from "dtos";
 import _react, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Buffer } from "buffer";
+// Avro needs the Buffer constructor in global space
 window.Buffer = Buffer;
 import fossilDelta from "fossil-delta";
+import { Leaderboard } from "./db/Leaderboard";
 
 // Connect to server
 console.debug('Connecting to', import.meta.env.VITE_WEBSOCKET_URL)
@@ -74,6 +76,10 @@ ws.addEventListener("message", ({ data }) => {
             const destroyed = destroyedType.fromBuffer(buffer);
             listeners[topic].forEach((c) => c(destroyed));
             break;
+        case (ServerTopic.Leaderboard):
+            const leaderboard = leaderboardType.fromBuffer(buffer);
+            listeners[topic].forEach((c) => c(leaderboard));
+            break;
         default:
             throw new NeverError(topic);
     }
@@ -85,7 +91,11 @@ ws.addEventListener("message", ({ data }) => {
  * @param message 
  */
 export function sendMessage<T>(type: Type<T>, message: T) {
-    ws.send(type.toBuffer(message));
+    if (ws.readyState === ws.OPEN) {
+        ws.send(type.toBuffer(message));
+    } else {
+        ws.addEventListener('open', () => ws.send(type.toBuffer(message)));
+    }
 }
 
 /**
@@ -183,4 +193,22 @@ export function useIsDisconnected() {
     }, []);
 
     return isDisconnected;
+}
+
+/**
+ * Hook for querying the leaderboard, caching the results.
+ * @returns Leaderbord rows.
+ */
+export function useLeaderboard() {
+    const leaderboard = useRef(new Leaderboard());
+    const [_, updateState] = useState();
+
+    useEffect(() => {
+        addTopicListener(ServerTopic.Leaderboard, updateState);
+        return () => {
+            removeTopicListener(ServerTopic.Leaderboard, updateState);
+        }
+    }, []);
+
+    return leaderboard.current;
 }

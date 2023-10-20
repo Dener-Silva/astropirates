@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { About } from "./About"
 import { NameForm } from "./NameForm";
 import { GameState, GameStateContext } from "../GameStateContext";
-import { Highscores } from "../Highscores";
+import { Leaderboard } from "./Leaderboard";
 
 export const StartScreen = () => {
     const [gameState] = useContext(GameStateContext);
@@ -12,7 +12,7 @@ export const StartScreen = () => {
             <h1 id="title">AstroPirates</h1>
             <NameForm></NameForm>
             <About></About>
-            <Highscores />
+            <Leaderboard />
         </div>
     )
 }

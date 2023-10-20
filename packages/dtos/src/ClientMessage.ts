@@ -1,8 +1,9 @@
 import avro from 'avro-js';
 
 export enum ClientTopic {
-    "SetNickname",
-    "Input"
+    SetNickname,
+    Input,
+    GetLeaderboard,
 }
 
 export type SetNickname = {
@@ -64,3 +65,20 @@ export const inputType = avro.parse<Input>({
         { name: "shoot", type: "boolean" },
     ]
 }, { logicalTypes: { 'clamp-0-to-1': Clamp0To1 } });
+
+
+export type GetLeaderboard = {
+    topic: ClientTopic.GetLeaderboard
+    offset: number
+    limit: number
+}
+
+export const getLeaderboardType = avro.parse<GetLeaderboard>({
+    type: "record",
+    name: "ScoreUpdate",
+    fields: [
+        { name: "topic", type: "int" },
+        { name: "offset", type: "int" },
+        { name: "limit", type: "int" },
+    ]
+});

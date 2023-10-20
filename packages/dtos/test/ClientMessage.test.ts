@@ -1,4 +1,4 @@
-import { ClientTopic, Input, SetNickname, inputType, setNicknameType } from "../src/ClientMessage.js"
+import { ClientTopic, GetLeaderboard, Input, SetNickname, getLeaderboardType, inputType, setNicknameType } from "../src/ClientMessage.js"
 
 test('Compare before and after serialization (SetNickname)', () => {
     const input: SetNickname = {
@@ -65,4 +65,17 @@ test.each([
     const result = inputType.fromBuffer(buffer);
 
     expect(result.magnitude).toEqual(expected);
+});
+
+test('Compare before and after serialization (GetLeaderboard)', () => {
+    const input: GetLeaderboard = {
+        topic: ClientTopic.GetLeaderboard,
+        offset: 100,
+        limit: 20
+    }
+
+    const buffer = getLeaderboardType.toBuffer(input);
+    const result = getLeaderboardType.fromBuffer(buffer);
+
+    expect(result).toEqual(input);
 });

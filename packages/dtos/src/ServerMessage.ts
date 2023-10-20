@@ -7,6 +7,7 @@ export enum ServerTopic {
     PartialGameUpdate,
     NicknameAlreadyExists,
     Destroyed,
+    Leaderboard,
 }
 
 export type Welcome = {
@@ -135,3 +136,48 @@ export const destroyedType = avro.parse<Destroyed>({
         { name: "byWhom", type: "string" },
     ]
 });
+
+class DateType extends avro.types.LogicalType<Date, number> {
+    _fromValue(val: number) { return new Date(val); };
+    _toValue(date: Date) { return +date; };
+}
+
+class BigintType extends avro.types.LogicalType<bigint, number> {
+    _fromValue(val: number) { return BigInt(val); };
+    _toValue(big: bigint) { return Number(big); };
+}
+
+export type LeaderboardRow = { id: bigint, name: string, score: bigint, ts: Date, rank: bigint }
+export type Leaderboard = {
+    topic: ServerTopic.Leaderboard
+    offset: number
+    rows: LeaderboardRow[]
+    count: bigint
+}
+
+export const leaderboardType = avro.parse<Leaderboard>({
+    name: "Leaderboard",
+    type: "record",
+    fields: [
+        { name: "topic", type: "int" },
+        { name: "offset", type: "int" },
+        {
+            name: "rows",
+            type: {
+                type: "array",
+                items: {
+                    name: "LeaderboardRow",
+                    type: "record",
+                    fields: [
+                        { name: "id", type: { type: "long", logicalType: "bigint" } },
+                        { name: "name", type: "string" },
+                        { name: "score", type: { type: "long", logicalType: "bigint" } },
+                        { name: 'ts', type: { type: "long", logicalType: "timestamp-millis" } },
+                        { name: 'rank', type: { type: "long", logicalType: "bigint" } }
+                    ]
+                }
+            }
+        },
+        { name: "count", type: { type: "long", logicalType: "bigint" } }
+    ]
+}, { logicalTypes: { "timestamp-millis": DateType, "bigint": BigintType } });

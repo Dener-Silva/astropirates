@@ -1,8 +1,9 @@
-import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, fullGameUpdateType, destroyedType, welcomeType, FullGameUpdate, GameUpdate, gameUpdateType, partialGameUpdateType } from "dtos";
+import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, fullGameUpdateType, destroyedType, welcomeType, GameUpdate, gameUpdateType, partialGameUpdateType, getLeaderboardType, leaderboardType } from "dtos";
 import { WebSocketServer, WebSocket } from "ws";
 import { GameServer } from "./GameServer.js";
 import { tickrate } from './delta.js';
 import { newId } from "./newId.js";
+import { Database } from "./Database.js";
 import fossilDelta from "fossil-delta";
 
 export class GameWebSocketRunner {
@@ -11,7 +12,7 @@ export class GameWebSocketRunner {
     readonly needsFullUpdate = new WeakSet<WebSocket>();
     previousGameUpdate = Buffer.from([]);
 
-    constructor(private wss: WebSocketServer, gameServer: GameServer) {
+    constructor(private wss: WebSocketServer, gameServer: GameServer, db: Database) {
         wss.on('connection', (ws) => {
             // TODO: check origin
             if (ws.protocol !== '') {
@@ -40,7 +41,7 @@ export class GameWebSocketRunner {
 
             ws.on('error', console.error);
 
-            ws.on('message', (data: Buffer) => {
+            ws.on('message', async (data: Buffer) => {
                 try {
                     const topic: ClientTopic = topicType.fromBuffer(data, undefined, true);
                     switch (topic) {
@@ -59,6 +60,16 @@ export class GameWebSocketRunner {
                             break;
                         case ClientTopic.Input:
                             gameServer.registerInputs(id, inputType.fromBuffer(data));
+                            break;
+                        case ClientTopic.GetLeaderboard:
+                            const params = getLeaderboardType.fromBuffer(data);
+                            const [rows, count] = await db.getLeaderboard(params)
+                            ws.send(leaderboardType.toBuffer({
+                                topic: ServerTopic.Leaderboard,
+                                offset: params.offset,
+                                rows,
+                                count
+                            }))
                             break;
                         default:
                             throw new NeverError(topic, `Unknown message topic: ${topic}`);

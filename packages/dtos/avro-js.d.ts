@@ -22,16 +22,16 @@ declare module "avro-js" {
     }
 
     export namespace types {
-        export class LogicalType<T> {
+        export class LogicalType<T, V = T> {
             constructor(attrs: any, opts?: any, Types?: any[])
             _values: any
             _underlyingType: any
-            abstract _toValue(value: T): T
-            abstract _fromValue(value: T): T
-            _read(tap: Tap): T
+            abstract _toValue(value: T): V
+            abstract _fromValue(value: V): T
+            _read(tap: Tap): V
             _skip(tap: Tap): void
-            _read(tap: Tap): T
-            _write(tap: Tap, val: T): void
+            _read(tap: Tap): V
+            _write(tap: Tap, val: V): void
         }
     }
 }
