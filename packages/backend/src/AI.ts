@@ -31,7 +31,7 @@ const defaultAiParameters = {
     reactionTime: 500,
     idleSpeed: 0.1,
     idleAngularVelocity: 0.01,
-    chasingAISpeedMultiplier: 0.5,
+    chasingAISpeedMultiplier: 0.6,
     chasingPlayerSpeedMultiplier: 0.75,
     chasingAngularVelocity: 0.1,
     aiVisionDistance: 300,
