@@ -5,7 +5,7 @@ import { Buffer } from "buffer";
 // Avro needs the Buffer constructor in global space
 window.Buffer = Buffer;
 import fossilDelta from "fossil-delta";
-import { Leaderboard } from "./db/Leaderboard";
+import { leaderboardInstance } from "./db/Leaderboard";
 
 // Connect to server
 console.debug('Connecting to', import.meta.env.VITE_WEBSOCKET_URL)
@@ -210,17 +210,16 @@ export function useIsDisconnected() {
  * @returns Leaderbord rows.
  */
 export function useLeaderboard() {
-    const leaderboard = useRef(new Leaderboard());
-    const [_, updateState] = useState();
+    const [, rerender] = useState();
 
     useEffect(() => {
-        addTopicListener(ServerTopic.Leaderboard, updateState);
-        addTopicListener(ServerTopic.InvalidateLeaderboardCache, updateState);
+        addTopicListener(ServerTopic.Leaderboard, rerender);
+        addTopicListener(ServerTopic.InvalidateLeaderboardCache, rerender);
         return () => {
-            removeTopicListener(ServerTopic.Leaderboard, updateState);
-            removeTopicListener(ServerTopic.InvalidateLeaderboardCache, updateState);
+            removeTopicListener(ServerTopic.Leaderboard, rerender);
+            removeTopicListener(ServerTopic.InvalidateLeaderboardCache, rerender);
         }
     }, []);
 
-    return leaderboard.current;
+    return leaderboardInstance;
 }

@@ -10,20 +10,25 @@ export class Leaderboard {
     private _count: number | null = null;
 
     constructor() {
-        const leaderboardCallback = (leaderboard: LeaderboardDTO) => {
-            leaderboard.rows.forEach((r, i) => {
-                this.cache[i + leaderboard.offset] = r
-            })
-            this._count = Number(leaderboard.count);
-            const page = Math.floor(leaderboard.offset / this.pageSize);
-            this.validPages.add(page);
-            this.pendingPages.delete(page);
-        }
-        addTopicListener(ServerTopic.Leaderboard, leaderboardCallback);
-        const invalidateCache = () => {
-            this.validPages.clear();
-        }
-        addTopicListener(ServerTopic.InvalidateLeaderboardCache, invalidateCache);
+        // Delay to avoid "Uncaught ReferenceError"
+        setTimeout(() => {
+            const leaderboardCallback = (leaderboard: LeaderboardDTO) => {
+                leaderboard.rows.forEach((r, i) => {
+                    this.cache[i + leaderboard.offset] = r
+                })
+                this._count = Number(leaderboard.count);
+                const page = Math.floor(leaderboard.offset / this.pageSize);
+                this.validPages.add(page);
+                this.pendingPages.delete(page);
+            }
+            addTopicListener(ServerTopic.Leaderboard, leaderboardCallback);
+            const invalidateCache = () => {
+                this.validPages.clear();
+            }
+            addTopicListener(ServerTopic.InvalidateLeaderboardCache, invalidateCache);
+            // Fetch first page to initialize "count" variable
+            this.loadPage(0);
+        })
     }
 
     private loadPage(page: number) {
@@ -51,3 +56,5 @@ export class Leaderboard {
         return this._count || 0;
     }
 }
+
+export const leaderboardInstance = new Leaderboard();

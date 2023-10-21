@@ -7,12 +7,12 @@ export const LeaderboardContent = ({ close, animationFinished }: { close: () => 
     // Row height is fixed to make infinite scrolling easier
     const rowHeight = 30;
     const scrollableDiv = useRef<HTMLDivElement>(null);
-    const [divHeight, setDivHeight] = useState<number>(scrollableDiv.current?.offsetHeight || 20);
+    const [divHeight, setDivHeight] = useState<number>(scrollableDiv.current?.offsetHeight || 0);
     const [rowNumber, setRowNumber] = useState<number>(0);
     // TODO fix LeaderboardContent updating while not visible.
     // Then we can increase the page size of the Leaderboard queries.
     const leaderboard = useLeaderboard();
-    const visibleRows = Math.ceil(divHeight / rowHeight);
+    const visibleRows = Math.min(Math.ceil(divHeight / rowHeight) + 1, leaderboard.count);
 
     const myRank = useSubscribeToTopic<Rank>(ServerTopic.Rank);
 
@@ -21,7 +21,7 @@ export const LeaderboardContent = ({ close, animationFinished }: { close: () => 
         if (!div) {
             return;
         }
-        new ResizeObserver(() => setDivHeight(div.offsetHeight || 20)).observe(div);
+        new ResizeObserver(() => setDivHeight(div.clientHeight)).observe(div);
     }, []);
 
     useEffect(() => {
