@@ -253,3 +253,27 @@ test("Proccess inputs immediately if buffer is empty", () => {
     const bullets = Object.values(result.bullets);
     expect(bullets.length).toEqual(1);
 });
+
+test("Dead player should not receive points", () => {
+    const gameServer = new GameServer(new SweepAndPrune());
+
+    const player = gameServer.addPlayer('0', 'Technocat', () => { });
+    const killer = gameServer.addPlayer('1', 'Killer', () => { });
+    killer!.state = GameObjectState.Exploded;
+    player!.onDestroyed('1');
+
+    expect(gameServer.scoreboard['1'].score).toEqual(0);
+});
+
+test("Absent player should not receive points", () => {
+    const gameServer = new GameServer(new SweepAndPrune());
+
+    const player = gameServer.addPlayer('0', 'Technocat', () => { });
+    const killer = gameServer.addPlayer('1', 'Killer', () => { });
+    killer!.state = GameObjectState.Exploded;
+    gameServer.cleanup()
+    expect(gameServer.players['1']).toBeFalsy();
+    player!.onDestroyed('1');
+
+    expect(gameServer.scoreboard['1'].score).toEqual(0);
+});

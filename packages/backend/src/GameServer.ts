@@ -31,8 +31,8 @@ export class GameServer {
         const collider = new Polygon([-45, -30, -45, 30, 45, 0]);
         this.sweepAndPrune.add(collider);
         const increaseScore = (byWhom: string) => {
-            // Player might already have logged out
-            if (this.scoreboard[byWhom]) {
+            // Player might already be dead or have logged out
+            if (this.players[byWhom]?.state < GameObjectState.ToBeRemoved && this.scoreboard[byWhom]) {
                 this.scoreboard[byWhom].score += 100;
             }
             onDestroyed(byWhom);
