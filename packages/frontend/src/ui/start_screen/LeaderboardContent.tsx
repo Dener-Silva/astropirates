@@ -9,6 +9,8 @@ export const LeaderboardContent = ({ close, animationFinished }: { close: () => 
     const scrollableDiv = useRef<HTMLDivElement>(null);
     const [divHeight, setDivHeight] = useState<number>(scrollableDiv.current?.offsetHeight || 20);
     const [rowNumber, setRowNumber] = useState<number>(0);
+    // TODO fix LeaderboardContent updating while not visible.
+    // Then we can increase the page size of the Leaderboard queries.
     const leaderboard = useLeaderboard();
     const visibleRows = Math.ceil(divHeight / rowHeight);
 
@@ -65,7 +67,7 @@ export const LeaderboardContent = ({ close, animationFinished }: { close: () => 
                                     <td>{String(r.score)} points</td>
                                 </tr>)
                             } else {
-                                return <tr key={i}><td>#-</td><td>-</td><td>-</td></tr>
+                                return <tr className="leaderboard-row" key={i}><td>#-</td><td>-</td><td>-</td></tr>
                             }
                         })}
                     </tbody>

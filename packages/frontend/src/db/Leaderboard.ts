@@ -5,7 +5,8 @@ export class Leaderboard {
 
     private readonly pageSize = 20;
     private cache: LeaderboardRow[] = [];
-    private pendingPages = new Set<number>;
+    private validPages = new Set<number>();
+    private pendingPages = new Set<number>();
     private _count: number | null = null;
 
     constructor() {
@@ -15,22 +16,21 @@ export class Leaderboard {
             })
             this._count = Number(leaderboard.count);
             const page = Math.floor(leaderboard.offset / this.pageSize);
+            this.validPages.add(page);
             this.pendingPages.delete(page);
         }
         addTopicListener(ServerTopic.Leaderboard, leaderboardCallback);
         const invalidateCache = () => {
-            this.cache = [];
-            this._count = null;
+            this.validPages.clear();
         }
         addTopicListener(ServerTopic.InvalidateLeaderboardCache, invalidateCache);
     }
 
     private loadPage(page: number) {
         const firstPageRow = page * this.pageSize;
-        const cacheHit = this.cache[firstPageRow];
+        const cacheHit = this.validPages.has(page);
         const pending = this.pendingPages.has(page);
-        const inBounds = this._count === null || firstPageRow < this._count;
-        if (!cacheHit && !pending && inBounds) {
+        if (!cacheHit && !pending) {
             this.pendingPages.add(page);
             sendMessage(getLeaderboardType, {
                 topic: ClientTopic.GetLeaderboard,

@@ -42,7 +42,7 @@ export function removeTopicListener<T = any>(topic: ServerTopic, callback: (mess
     }
 }
 
-let gameUpdateBuffer: Buffer | number[] = [];
+let gameUpdateBuffer: Buffer | number[] | null = null;
 
 ws.addEventListener("message", ({ data }) => {
     const buffer = Buffer.from(data);
@@ -66,6 +66,9 @@ ws.addEventListener("message", ({ data }) => {
             listeners[ServerTopic.FullGameUpdate].forEach((c) => c(fullGameUpdate));
             break;
         case ServerTopic.PartialGameUpdate:
+            if (!gameUpdateBuffer) {
+                break;
+            }
             const partialGameUpdate = partialGameUpdateType.fromBuffer(buffer);
             gameUpdateBuffer = fossilDelta.apply(gameUpdateBuffer, partialGameUpdate.delta);
             const gameUpdate = gameUpdateType.fromBuffer(Buffer.from(gameUpdateBuffer));

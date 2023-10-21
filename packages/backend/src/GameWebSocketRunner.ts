@@ -9,7 +9,6 @@ import { Type } from "avro-js";
 
 export class GameWebSocketRunner {
 
-    readonly clients = new WeakSet<WebSocket>();
     readonly needsFullUpdate = new WeakSet<WebSocket>();
     previousGameUpdate = Buffer.from([]);
 
@@ -21,7 +20,6 @@ export class GameWebSocketRunner {
             }
             const id = newId();
             const sendWelcome = () => {
-                this.clients.add(ws);
                 this.needsFullUpdate.add(ws);
                 ws.send(welcomeType.toBuffer({
                     topic: ServerTopic.Welcome,
@@ -97,7 +95,7 @@ export class GameWebSocketRunner {
     private broadcast<T>(type: Type<T>, message: T) {
         const buffer = type.toBuffer(message);
         for (const ws of this.wss.clients) {
-            if (this.clients.has(ws)) {
+            if (ws.protocol === '') {
                 ws.send(buffer);
             }
         }
@@ -115,7 +113,7 @@ export class GameWebSocketRunner {
             delta
         })
         for (const ws of this.wss.clients) {
-            if (this.clients.has(ws)) {
+            if (ws.protocol === '') {
                 if (this.needsFullUpdate.delete(ws)) {
                     ws.send(fullGameUpdate);
                 } else {

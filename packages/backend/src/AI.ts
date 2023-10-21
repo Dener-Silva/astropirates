@@ -1,4 +1,4 @@
-import { AdminTopic, ClientTopic, Dictionary, GameObjectState, GameUpdate, Input, NeverError, SetAiParameters, angleDistance, rotateTowards, setAiParametersType, topicType } from "dtos";
+import { AdminTopic, ClientTopic, Dictionary, GameObjectState, GameUpdate, Input, NeverError, ServerTopic, SetAiParameters, angleDistance, rotateTowards, setAiParametersType, topicType } from "dtos";
 import { GameServer } from "./GameServer";
 import { newId } from "./newId";
 import { GameWebSocketRunner } from "./GameWebSocketRunner";
@@ -41,19 +41,16 @@ const defaultAiParameters = {
 
 export class AI {
 
-    readonly clients = new WeakSet<WebSocket>();
-
     actors: Dictionary<Actor> = {}
     players: Dictionary<Circle> = {}
     sap = new SweepAndPrune();
     aiParameters: SetAiParameters = defaultAiParameters;
 
-    constructor(wss: WebSocketServer, private gameServer: GameServer, private db: Database) {
+    constructor(private wss: WebSocketServer, private gameServer: GameServer, private db: Database) {
         wss.on('connection', (ws) => {
             if (ws.protocol !== 'admin') {
                 return;
             }
-            this.clients.add(ws);
 
             ws.on('message', (data: Buffer) => {
 
@@ -77,7 +74,7 @@ export class AI {
                     // Broadcast
                     const buffer = setAiParametersType.toBuffer(this.aiParameters);
                     for (const ws of wss.clients) {
-                        if (this.clients.has(ws)) {
+                        if (ws.protocol === 'admin') {
                             ws.send(buffer);
                         }
                     }
@@ -170,7 +167,12 @@ export class AI {
                 player = this.gameServer.addPlayer(id, nick, () => {
                     const score = this.gameServer.scoreboard[id];
                     if (score.score > 0) {
-                        this.db.addToLeaderboardBot(nick, this.gameServer.scoreboard[id].score)
+                        this.db.addToLeaderboardBot(nick, this.gameServer.scoreboard[id].score);
+                        for (const ws of this.wss.clients) {
+                            if (ws.protocol === '') {
+                                ws.send(topicType.toBuffer(ServerTopic.InvalidateLeaderboardCache));
+                            }
+                        }
                     }
                 });
             }
