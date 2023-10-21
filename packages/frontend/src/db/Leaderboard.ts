@@ -7,7 +7,7 @@ export class Leaderboard {
     private cache: LeaderboardRow[] = [];
     private validPages = new Set<number>();
     private pendingPages = new Set<number>();
-    private _count: number | null = null;
+    count = 0;
 
     constructor() {
         // Delay to avoid "Uncaught ReferenceError"
@@ -16,7 +16,7 @@ export class Leaderboard {
                 leaderboard.rows.forEach((r, i) => {
                     this.cache[i + leaderboard.offset] = r
                 })
-                this._count = Number(leaderboard.count);
+                this.count = Number(leaderboard.count);
                 const page = Math.floor(leaderboard.offset / this.pageSize);
                 this.validPages.add(page);
                 this.pendingPages.delete(page);
@@ -48,13 +48,9 @@ export class Leaderboard {
     getRow(rowNumber: number): LeaderboardRow | null {
         const page = Math.floor(rowNumber / this.pageSize);
         this.loadPage(page);
-        this.loadPage(page + 1);
         return this.cache[rowNumber] || null;
     }
 
-    get count() {
-        return this._count || 0;
-    }
 }
 
 export const leaderboardInstance = new Leaderboard();
