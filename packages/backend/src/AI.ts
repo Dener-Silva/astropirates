@@ -7,6 +7,7 @@ import { Circle } from "./collision/colliders/Circle";
 import { Collider } from "./collision/colliders/Collider";
 import { delta } from "./delta";
 import { WebSocket, WebSocketServer } from "ws";
+import { Database } from "./Database";
 
 enum ActorState {
     Idle,
@@ -47,7 +48,7 @@ export class AI {
     sap = new SweepAndPrune();
     aiParameters: SetAiParameters = defaultAiParameters;
 
-    constructor(wss: WebSocketServer, private gameServer: GameServer, private webSocketServer: GameWebSocketRunner) {
+    constructor(wss: WebSocketServer, private gameServer: GameServer, private db: Database) {
         wss.on('connection', (ws) => {
             if (ws.protocol !== 'admin') {
                 return;
@@ -165,7 +166,13 @@ export class AI {
             let player;
             let count = 1;
             while (!player) {
-                player = this.gameServer.addPlayer(id, "BOT " + count++, () => { });
+                const nick = "BOT " + count++;
+                player = this.gameServer.addPlayer(id, nick, () => {
+                    const score = this.gameServer.scoreboard[id];
+                    if (score.score > 0) {
+                        this.db.addToLeaderboardBot(nick, this.gameServer.scoreboard[id].score)
+                    }
+                });
             }
             const collider = this.players[id] = new Circle(this.aiParameters.aiVisionDistance);
             collider.owner = player;

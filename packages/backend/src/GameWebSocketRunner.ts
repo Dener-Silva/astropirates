@@ -5,6 +5,7 @@ import { tickrate } from './delta.js';
 import { newId } from "./newId.js";
 import { Database } from "./Database.js";
 import fossilDelta from "fossil-delta";
+import { Type } from "avro-js";
 
 export class GameWebSocketRunner {
 
@@ -47,8 +48,13 @@ export class GameWebSocketRunner {
                     switch (topic) {
                         case ClientTopic.SetNickname:
                             const message = setNicknameType.fromBuffer(data);
-                            const onDestroyed = (byWhom: string) => {
-                                ws.send(destroyedType.toBuffer({ topic: ServerTopic.Destroyed, byWhom }));
+                            const onDestroyed = async (byWhom: string) => {
+                                const score = gameServer.scoreboard[id];
+                                if (score.score > 0) {
+                                    const [rowId, rowNumber] = await db.addToLeaderboard(score.nickname, score.score);
+                                    this.broadcast(topicType, ServerTopic.InvalidateLeaderboardCache);
+                                    ws.send(destroyedType.toBuffer({ topic: ServerTopic.Destroyed, byWhom, rowId, rowNumber }));
+                                }
                             }
                             // Try to add player to the server
                             const player = gameServer.addPlayer(id, message.nickname, onDestroyed);
@@ -86,6 +92,15 @@ export class GameWebSocketRunner {
                 gameServer.onPlayerLoggedOut(id);
             });
         });
+    }
+
+    private broadcast<T>(type: Type<T>, message: T) {
+        const buffer = type.toBuffer(message);
+        for (const ws of this.wss.clients) {
+            if (this.clients.has(ws)) {
+                ws.send(buffer);
+            }
+        }
     }
 
     onGameUpdate(gameUpdate: GameUpdate) {

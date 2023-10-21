@@ -39,7 +39,7 @@ const wss = new WebSocketServer({ server });
 webSocketHeartbeat(wss);
 const db = new Database();
 const webSocketServer = new GameWebSocketRunner(wss, gameServer, db);
-const ai = new AI(wss, gameServer, webSocketServer);
+const ai = new AI(wss, gameServer, db);
 
 // Using setImmediate so the tickrate can be read from the dotenv file.
 setImmediate(() =>

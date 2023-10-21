@@ -74,8 +74,9 @@
 		- Install React - OK
         - Name choosing screen - OK
         - High score screen
-            - Layout
-            - Fetch from database
+            - Layout - OK
+            - Fetch from database - OK
+			- Show score after match
 - Docs (To be expanded)
 
 - Do not add palyergraphics twice - OK

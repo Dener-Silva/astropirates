@@ -75,7 +75,9 @@ test('Compare before and after serialization (PartialGameUpdate)', () => {
 test('Compare before and after serialization (Destroyed)', () => {
     const message: Destroyed = {
         topic: ServerTopic.Destroyed,
-        byWhom: '0'
+        byWhom: '0',
+        rowId: 321n,
+        rowNumber: 123n
     }
 
     const buf = destroyedType.toBuffer(message);

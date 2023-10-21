@@ -1,16 +1,26 @@
-import { useState } from "react"
-import { LeaderboardTable } from "./LeaderboardContent";
+import { useEffect, useState } from "react"
+import { LeaderboardContent } from "./LeaderboardContent";
+import { useSubscribeToTopic } from "../../WebSocketClient";
+import { Destroyed, ServerTopic } from "dtos";
 
 export const Leaderboard = () => {
 
     const [display, setDisplay] = useState("none");
     const [animation, setAnimation] = useState("");
+    const [animationFinished, setAnimationFinished] = useState(false);
 
-    const close = () => setAnimation("close 1000ms forwards");
+    const destroyed = useSubscribeToTopic<Destroyed>(ServerTopic.Destroyed);
+
+    const close = () => {
+        setAnimation("close 1000ms forwards");
+        setAnimationFinished(false);
+    };
     const open = () => {
         setAnimation("open 1000ms forwards");
         setDisplay("");
     };
+
+    useEffect(() => { destroyed && open() }, [destroyed]);
 
     return (
         <>
@@ -23,9 +33,11 @@ export const Leaderboard = () => {
                     onAnimationEnd={(e) => {
                         if (e.animationName === "close") {
                             setDisplay("none")
+                        } else {
+                            setAnimationFinished(true)
                         }
                     }}>
-                    <LeaderboardTable close={close} />
+                    <LeaderboardContent animationFinished={animationFinished} close={close} />
                 </div>
             </div>
         </>

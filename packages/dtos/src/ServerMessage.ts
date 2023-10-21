@@ -8,6 +8,7 @@ export enum ServerTopic {
     NicknameAlreadyExists,
     Destroyed,
     Leaderboard,
+    InvalidateLeaderboardCache,
 }
 
 export type Welcome = {
@@ -123,28 +124,32 @@ export const partialGameUpdateType = avro.parse<PartialGameUpdate>({
     ]
 });
 
+class BigintType extends avro.types.LogicalType<bigint, number> {
+    _fromValue(val: number) { return BigInt(val); };
+    _toValue(big: bigint) { return Number(big); };
+}
+
 export type Destroyed = {
     topic: ServerTopic.Destroyed
     byWhom: string
+    rowNumber: bigint
+    rowId: bigint
 }
 
 export const destroyedType = avro.parse<Destroyed>({
     type: "record",
-    name: "ScoreUpdate",
+    name: "Destroyed",
     fields: [
         { name: "topic", type: "int" },
         { name: "byWhom", type: "string" },
+        { name: "rowId", type: { type: "long", logicalType: "bigint" } },
+        { name: "rowNumber", type: { type: "long", logicalType: "bigint" } },
     ]
-});
+}, { logicalTypes: { "bigint": BigintType } });
 
 class DateType extends avro.types.LogicalType<Date, number> {
     _fromValue(val: number) { return new Date(val); };
     _toValue(date: Date) { return +date; };
-}
-
-class BigintType extends avro.types.LogicalType<bigint, number> {
-    _fromValue(val: number) { return BigInt(val); };
-    _toValue(big: bigint) { return Number(big); };
 }
 
 export type LeaderboardRow = { id: bigint, name: string, score: bigint, ts: Date, rank: bigint }

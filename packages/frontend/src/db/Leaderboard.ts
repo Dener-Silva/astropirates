@@ -3,7 +3,7 @@ import { addTopicListener, sendMessage } from "../WebSocketClient";
 
 export class Leaderboard {
 
-    private pageSize = 20;
+    private readonly pageSize = 20;
     private cache: LeaderboardRow[] = [];
     private pendingPages = new Set<number>;
     private _count: number | null = null;
@@ -18,6 +18,11 @@ export class Leaderboard {
             this.pendingPages.delete(page);
         }
         addTopicListener(ServerTopic.Leaderboard, leaderboardCallback);
+        const invalidateCache = () => {
+            this.cache = [];
+            this._count = null;
+        }
+        addTopicListener(ServerTopic.InvalidateLeaderboardCache, invalidateCache);
     }
 
     private loadPage(page: number) {

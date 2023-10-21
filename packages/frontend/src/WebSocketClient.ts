@@ -48,11 +48,11 @@ ws.addEventListener("message", ({ data }) => {
     const buffer = Buffer.from(data);
     const topic: ServerTopic = topicType.fromBuffer(buffer, undefined, true);
     switch (topic) {
-        case (ServerTopic.Welcome):
+        case ServerTopic.Welcome:
             const welcomeMessage = welcomeType.fromBuffer(buffer);
             listeners[topic].forEach((c) => c(welcomeMessage));
             break;
-        case (ServerTopic.NicknameAlreadyExists):
+        case ServerTopic.NicknameAlreadyExists:
             listeners[topic].forEach((c) => c(topic));
             break;
         case ServerTopic.GameUpdate:
@@ -72,13 +72,16 @@ ws.addEventListener("message", ({ data }) => {
             listeners[ServerTopic.GameUpdate].forEach((c) => c(gameUpdate));
             listeners[ServerTopic.PartialGameUpdate].forEach((c) => c(gameUpdate));
             break;
-        case (ServerTopic.Destroyed):
+        case ServerTopic.Destroyed:
             const destroyed = destroyedType.fromBuffer(buffer);
             listeners[topic].forEach((c) => c(destroyed));
             break;
-        case (ServerTopic.Leaderboard):
+        case ServerTopic.Leaderboard:
             const leaderboard = leaderboardType.fromBuffer(buffer);
             listeners[topic].forEach((c) => c(leaderboard));
+            break;
+        case ServerTopic.InvalidateLeaderboardCache:
+            listeners[topic].forEach((c) => c(topic));
             break;
         default:
             throw new NeverError(topic);
@@ -205,8 +208,10 @@ export function useLeaderboard() {
 
     useEffect(() => {
         addTopicListener(ServerTopic.Leaderboard, updateState);
+        addTopicListener(ServerTopic.InvalidateLeaderboardCache, updateState);
         return () => {
             removeTopicListener(ServerTopic.Leaderboard, updateState);
+            removeTopicListener(ServerTopic.InvalidateLeaderboardCache, updateState);
         }
     }, []);
 
