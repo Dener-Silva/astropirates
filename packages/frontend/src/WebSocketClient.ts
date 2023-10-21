@@ -1,5 +1,5 @@
 import { Type } from "avro-js";
-import { GameUpdate, NeverError, ServerTopic, destroyedType, topicType, welcomeType, Dictionary, fullGameUpdateType, Score, partialGameUpdateType, gameUpdateType, leaderboardType } from "dtos";
+import { GameUpdate, NeverError, ServerTopic, destroyedType, topicType, welcomeType, Dictionary, fullGameUpdateType, Score, partialGameUpdateType, gameUpdateType, leaderboardType, rankType } from "dtos";
 import _react, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Buffer } from "buffer";
 // Avro needs the Buffer constructor in global space
@@ -85,6 +85,10 @@ ws.addEventListener("message", ({ data }) => {
             break;
         case ServerTopic.InvalidateLeaderboardCache:
             listeners[topic].forEach((c) => c(topic));
+            break;
+        case ServerTopic.Rank:
+            const rank = rankType.fromBuffer(buffer);
+            listeners[topic].forEach((c) => c(rank));
             break;
         default:
             throw new NeverError(topic);

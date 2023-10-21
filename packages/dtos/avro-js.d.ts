@@ -19,6 +19,9 @@ declare module "avro-js" {
         writeInt: (value: number) => void
         readString: () => string
         skipString: () => void
+        readBoolean: () => boolean
+        skipBoolean: () => void
+        writeBoolean: (value: boolean) => void
     }
 
     export namespace types {
@@ -30,7 +33,6 @@ declare module "avro-js" {
             abstract _fromValue(value: V): T
             _read(tap: Tap): V
             _skip(tap: Tap): void
-            _read(tap: Tap): V
             _write(tap: Tap, val: V): void
         }
     }

@@ -9,6 +9,7 @@ export enum ServerTopic {
     Destroyed,
     Leaderboard,
     InvalidateLeaderboardCache,
+    Rank,
 }
 
 export type Welcome = {
@@ -124,7 +125,7 @@ export const partialGameUpdateType = avro.parse<PartialGameUpdate>({
     ]
 });
 
-class BigintType extends avro.types.LogicalType<bigint, number> {
+class BigIntType extends avro.types.LogicalType<bigint, number> {
     _fromValue(val: number) { return BigInt(val); };
     _toValue(big: bigint) { return Number(big); };
 }
@@ -132,8 +133,6 @@ class BigintType extends avro.types.LogicalType<bigint, number> {
 export type Destroyed = {
     topic: ServerTopic.Destroyed
     byWhom: string
-    rowNumber: bigint
-    rowId: bigint
 }
 
 export const destroyedType = avro.parse<Destroyed>({
@@ -141,11 +140,9 @@ export const destroyedType = avro.parse<Destroyed>({
     name: "Destroyed",
     fields: [
         { name: "topic", type: "int" },
-        { name: "byWhom", type: "string" },
-        { name: "rowId", type: { type: "long", logicalType: "bigint" } },
-        { name: "rowNumber", type: { type: "long", logicalType: "bigint" } },
+        { name: "byWhom", type: "string" }
     ]
-}, { logicalTypes: { "bigint": BigintType } });
+});
 
 class DateType extends avro.types.LogicalType<Date, number> {
     _fromValue(val: number) { return new Date(val); };
@@ -185,4 +182,20 @@ export const leaderboardType = avro.parse<Leaderboard>({
         },
         { name: "count", type: { type: "long", logicalType: "bigint" } }
     ]
-}, { logicalTypes: { "timestamp-millis": DateType, "bigint": BigintType } });
+}, { logicalTypes: { "timestamp-millis": DateType, "bigint": BigIntType } });
+
+export type Rank = {
+    topic: ServerTopic.Rank
+    rowNumber: bigint
+    rowId: bigint
+}
+
+export const rankType = avro.parse<Rank>({
+    type: "record",
+    name: "Rank",
+    fields: [
+        { name: "topic", type: "int" },
+        { name: "rowId", type: { type: "long", logicalType: "bigint" } },
+        { name: "rowNumber", type: { type: "long", logicalType: "bigint" } },
+    ]
+}, { logicalTypes: { "bigint": BigIntType } });

@@ -1,4 +1,4 @@
-import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, fullGameUpdateType, destroyedType, welcomeType, GameUpdate, gameUpdateType, partialGameUpdateType, getLeaderboardType, leaderboardType } from "dtos";
+import { ClientTopic, NeverError, inputType, setNicknameType, ServerTopic, topicType, fullGameUpdateType, destroyedType, welcomeType, GameUpdate, gameUpdateType, partialGameUpdateType, getLeaderboardType, leaderboardType, rankType } from "dtos";
 import { WebSocketServer, WebSocket } from "ws";
 import { GameServer } from "./GameServer.js";
 import { tickrate } from './delta.js';
@@ -48,10 +48,11 @@ export class GameWebSocketRunner {
                             const message = setNicknameType.fromBuffer(data);
                             const onDestroyed = async (byWhom: string) => {
                                 const score = gameServer.scoreboard[id];
+                                ws.send(destroyedType.toBuffer({ topic: ServerTopic.Destroyed, byWhom }));
                                 if (score.score > 0) {
                                     const [rowId, rowNumber] = await db.addToLeaderboard(score.nickname, score.score);
                                     this.broadcast(topicType, ServerTopic.InvalidateLeaderboardCache);
-                                    ws.send(destroyedType.toBuffer({ topic: ServerTopic.Destroyed, byWhom, rowId, rowNumber }));
+                                    ws.send(rankType.toBuffer({ topic: ServerTopic.Rank, rowId, rowNumber }));
                                 }
                             }
                             // Try to add player to the server

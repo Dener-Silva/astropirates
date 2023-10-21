@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { LeaderboardContent } from "./LeaderboardContent";
 import { useSubscribeToTopic } from "../../WebSocketClient";
-import { Destroyed, ServerTopic } from "dtos";
+import { Rank, ServerTopic } from "dtos";
 
 export const Leaderboard = () => {
 
@@ -9,7 +9,7 @@ export const Leaderboard = () => {
     const [animation, setAnimation] = useState("");
     const [animationFinished, setAnimationFinished] = useState(false);
 
-    const destroyed = useSubscribeToTopic<Destroyed>(ServerTopic.Destroyed);
+    const rank = useSubscribeToTopic<Rank>(ServerTopic.Rank);
 
     const close = () => {
         setAnimation("close 1000ms forwards");
@@ -20,7 +20,7 @@ export const Leaderboard = () => {
         setDisplay("");
     };
 
-    useEffect(() => { destroyed && open() }, [destroyed]);
+    useEffect(() => { rank && open() }, [rank]);
 
     return (
         <>

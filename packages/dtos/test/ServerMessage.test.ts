@@ -1,4 +1,4 @@
-import { GameObjectState, ServerTopic, FullGameUpdate, destroyedType, fullGameUpdateType, Destroyed, Welcome, welcomeType, PartialGameUpdate, partialGameUpdateType, GameUpdate, gameUpdateType, Leaderboard, leaderboardType } from "../src/ServerMessage.js";
+import { GameObjectState, ServerTopic, FullGameUpdate, destroyedType, fullGameUpdateType, Destroyed, Welcome, welcomeType, PartialGameUpdate, partialGameUpdateType, GameUpdate, gameUpdateType, Leaderboard, leaderboardType, Rank, rankType } from "../src/ServerMessage.js";
 import { toBeDeepCloseTo } from 'jest-matcher-deep-close-to';
 expect.extend({ toBeDeepCloseTo });
 
@@ -75,9 +75,7 @@ test('Compare before and after serialization (PartialGameUpdate)', () => {
 test('Compare before and after serialization (Destroyed)', () => {
     const message: Destroyed = {
         topic: ServerTopic.Destroyed,
-        byWhom: '0',
-        rowId: 321n,
-        rowNumber: 123n
+        byWhom: '0'
     }
 
     const buf = destroyedType.toBuffer(message);
@@ -104,6 +102,19 @@ test('Compare before and after serialization (Leaderboard)', () => {
 
     const buf = leaderboardType.toBuffer(message);
     const result = leaderboardType.fromBuffer(buf);
+
+    expect(result).toEqual(message);
+});
+
+test('Compare before and after serialization (Rank)', () => {
+    const message: Rank = {
+        topic: ServerTopic.Rank,
+        rowId: 321n,
+        rowNumber: 123n
+    }
+
+    const buf = rankType.toBuffer(message);
+    const result = rankType.fromBuffer(buf);
 
     expect(result).toEqual(message);
 });

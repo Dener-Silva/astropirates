@@ -1,6 +1,6 @@
 import _React, { useEffect, useRef, useState } from "react";
 import { useLeaderboard, useSubscribeToTopic } from "../../WebSocketClient";
-import { Destroyed, LeaderboardRow, ServerTopic } from "dtos";
+import { LeaderboardRow, Rank, ServerTopic } from "dtos";
 
 export const LeaderboardContent = ({ close, animationFinished }: { close: () => void, animationFinished: boolean }) => {
 
@@ -14,7 +14,7 @@ export const LeaderboardContent = ({ close, animationFinished }: { close: () => 
     const leaderboard = useLeaderboard();
     const visibleRows = Math.ceil(divHeight / rowHeight);
 
-    const destroyed = useSubscribeToTopic<Destroyed>(ServerTopic.Destroyed);
+    const myRank = useSubscribeToTopic<Rank>(ServerTopic.Rank);
 
     useEffect(() => {
         const div = scrollableDiv.current;
@@ -26,10 +26,10 @@ export const LeaderboardContent = ({ close, animationFinished }: { close: () => 
 
     useEffect(() => {
         const div = scrollableDiv.current;
-        if (!animationFinished || !div || !destroyed) {
+        if (!animationFinished || !div || !myRank) {
             return;
         }
-        const top = (Number(destroyed.rowNumber) - visibleRows / 2) * rowHeight;
+        const top = (Number(myRank.rowNumber) - visibleRows / 2) * rowHeight;
         div.scroll({ top, behavior: "smooth" });
     }, [animationFinished]);
 
@@ -60,7 +60,7 @@ export const LeaderboardContent = ({ close, animationFinished }: { close: () => 
                     <tbody>
                         {rows.map((r, i) => {
                             if (r) {
-                                const className = destroyed?.rowId === r.id ? " leaderboard-my-row" : "";
+                                const className = myRank?.rowId === r.id ? " leaderboard-my-row" : "";
                                 return (<tr className={"leaderboard-row" + className} key={i}>
                                     <td>#{String(r.rank)}</td>
                                     <td>{r.name}</td>
