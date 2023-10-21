@@ -144,12 +144,7 @@ export const destroyedType = avro.parse<Destroyed>({
     ]
 });
 
-class DateType extends avro.types.LogicalType<Date, number> {
-    _fromValue(val: number) { return new Date(val); };
-    _toValue(date: Date) { return +date; };
-}
-
-export type LeaderboardRow = { id: bigint, name: string, score: bigint, ts: Date, rank: bigint }
+export type LeaderboardRow = { id: bigint, name: string, score: bigint, rank: bigint }
 export type Leaderboard = {
     topic: ServerTopic.Leaderboard
     offset: number
@@ -174,7 +169,6 @@ export const leaderboardType = avro.parse<Leaderboard>({
                         { name: "id", type: { type: "long", logicalType: "bigint" } },
                         { name: "name", type: "string" },
                         { name: "score", type: { type: "long", logicalType: "bigint" } },
-                        { name: 'ts', type: { type: "long", logicalType: "timestamp-millis" } },
                         { name: 'rank', type: { type: "long", logicalType: "bigint" } }
                     ]
                 }
@@ -182,7 +176,7 @@ export const leaderboardType = avro.parse<Leaderboard>({
         },
         { name: "count", type: { type: "long", logicalType: "bigint" } }
     ]
-}, { logicalTypes: { "timestamp-millis": DateType, "bigint": BigIntType } });
+}, { logicalTypes: { "bigint": BigIntType } });
 
 export type Rank = {
     topic: ServerTopic.Rank

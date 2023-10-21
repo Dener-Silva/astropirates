@@ -93,7 +93,6 @@ test('Compare before and after serialization (Leaderboard)', () => {
                 id: 24n,
                 name: 'Technocat',
                 score: 100n,
-                ts: new Date('2023-10-19T23:13:44.000Z'),
                 rank: 1n
             }
         ],
