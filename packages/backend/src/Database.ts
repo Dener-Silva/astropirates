@@ -70,4 +70,15 @@ export class Database {
             if (conn) conn.release();
         }
     }
+
+    async deleteBotsFromLeaderboard() {
+        let conn;
+        try {
+            conn = await this.pool.getConnection();
+            const deleteBots = "delete from highscores where name like 'BOT %'";
+            await conn.query(deleteBots);
+        } finally {
+            if (conn) conn.release();
+        }
+    }
 }

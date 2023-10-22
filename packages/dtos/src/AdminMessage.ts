@@ -3,7 +3,8 @@ import avro from 'avro-js';
 export enum AdminTopic {
     SetAiParameters,
     ResetAiParameters,
-    KillBots
+    KillBots,
+    DeleteBotsFromLeaderboard
 }
 
 export type SetAiParameters = {

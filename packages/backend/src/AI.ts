@@ -68,6 +68,10 @@ export class AI {
                                 this.gameServer.players[id].state = GameObjectState.Exploded
                             }
                             break;
+                        case AdminTopic.DeleteBotsFromLeaderboard:
+                            db.deleteBotsFromLeaderboard();
+                            this.invalidateLeaderboardCache();
+                            break;
                         default:
                             throw new NeverError(topic, `Unknown message topic: ${topic}`);
                     }
@@ -168,11 +172,7 @@ export class AI {
                     const score = this.gameServer.scoreboard[id];
                     if (score.score > 0) {
                         this.db.addToLeaderboardBot(nick, this.gameServer.scoreboard[id].score);
-                        for (const ws of this.wss.clients) {
-                            if (ws.protocol === '') {
-                                ws.send(topicType.toBuffer(ServerTopic.InvalidateLeaderboardCache));
-                            }
-                        }
+                        this.invalidateLeaderboardCache();
                     }
                 });
             }
@@ -203,6 +203,14 @@ export class AI {
             // Only AI colliders have owner
             actor.chasingAi = Boolean(enemy.owner);
             actor.targetAngle = Math.atan2(enemy.x - ai.x, ai.y - enemy.y) - Math.PI / 2;
+        }
+    }
+
+    invalidateLeaderboardCache() {
+        for (const ws of this.wss.clients) {
+            if (ws.protocol === '') {
+                ws.send(topicType.toBuffer(ServerTopic.InvalidateLeaderboardCache));
+            }
         }
     }
 

@@ -110,6 +110,8 @@ for (let input of document.getElementsByTagName("input")!) {
     })
 }
 
+const deleteBots = document.getElementById("delete-bots") as HTMLButtonElement;
+deleteBots.onclick = () => ws.send(topicType.toBuffer(AdminTopic.DeleteBotsFromLeaderboard));
 const reset = document.getElementById("reset") as HTMLButtonElement;
 reset.onclick = () => ws.send(topicType.toBuffer(AdminTopic.ResetAiParameters));
 const killBots = document.getElementById("kill-bots") as HTMLButtonElement;
