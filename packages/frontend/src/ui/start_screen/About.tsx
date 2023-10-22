@@ -53,7 +53,7 @@ export const About = () => {
                             <h2>Back-end:</h2>
                             <ul>
                                 <li>Running on <a href="https://nodejs.org/">Node.js</a></li>
-                                <li>Using <a href="https://mariadb.org/">MariaDB</a> for the global leaderboards (coming soon)</li>
+                                <li>Using <a href="https://mariadb.org/">MariaDB</a> for the global leaderboards</li>
                             </ul>
                             <h2>Other:</h2>
                             <ul>
