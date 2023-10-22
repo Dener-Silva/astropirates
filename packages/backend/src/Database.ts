@@ -54,7 +54,7 @@ export class Database {
         let conn;
         try {
             conn = await this.pool.getConnection();
-            const select = "select score from highscores where name = ? limit 1";
+            const select = "select id, score from highscores where name = ? limit 1";
             const rows: DbLeaderboardRow[] = await conn.query(select, [nickname]);
             if (rows.length) {
                 if (rows[0].score >= score) {
