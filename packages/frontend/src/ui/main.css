@@ -148,7 +148,7 @@ td {
     }
 }
 
-#about-modal-backdrop {
+.modal-backdrop {
     position: fixed;
     display: flex;
     align-items: center;

@@ -26,7 +26,7 @@ export const About = () => {
     return (
         <>
             <button onClick={open}>About This Game</button>
-            <div id="about-modal-backdrop" style={{ display }} onClick={close}>
+            <div className="modal-backdrop" style={{ display }} onClick={close}>
                 <div
                     className="open-animation-container"
                     style={{ animation, overflow, alignItems }}

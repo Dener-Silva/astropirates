@@ -25,7 +25,7 @@ export const Leaderboard = () => {
     return (
         <>
             <button onClick={open}>Leaderboard</button>
-            <div id="about-modal-backdrop" style={{ display }} onClick={close}>
+            <div className="modal-backdrop" style={{ display }} onClick={close}>
                 <div
                     className="open-animation-container"
                     style={{ animation }}
