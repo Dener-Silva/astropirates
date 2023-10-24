@@ -23,9 +23,6 @@ importers:
 
   packages/backend:
     dependencies:
-      '@types/fossil-delta':
-        specifier: ^1.0.1
-        version: 1.0.1
       avro-js:
         specifier: ^1.11.3
         version: 1.11.3
@@ -42,6 +39,9 @@ importers:
         specifier: ^8.14.2
         version: 8.14.2
     devDependencies:
+      '@types/fossil-delta':
+        specifier: ^1.0.1
+        version: 1.0.1
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.5
@@ -1685,6 +1685,7 @@ packages:
     resolution: {integrity: sha512-U1KxChwuRml9uNjSBq7LC2i5x7kRbr7BTaHgI8ZBdLoXAr+2mpSgPX4aXrwAHIpmmbu7bAUIVspuqOLudlo+9A==}
     dependencies:
       '@types/node': 20.7.0
+    dev: true
 
   /@types/geojson@7946.0.12:
     resolution: {integrity: sha512-uK2z1ZHJyC0nQRbuovXFt4mzXDwf27vQeUWNhfKGwRcWW429GOhP8HxUHlM6TLH4bzmlv/HlEjpvJh3JfmGsAA==}
@@ -1733,6 +1734,7 @@ packages:
 
   /@types/node@20.7.0:
     resolution: {integrity: sha512-zI22/pJW2wUZOVyguFaUL1HABdmSVxpXrzIqkjsHmyUjNhPoWM1CKfvVuXfetHhIok4RY573cqS0mZ1SJEnoTg==}
+    dev: true
 
   /@types/offscreencanvas@2019.7.1:
     resolution: {integrity: sha512-+HSrJgjBW77ALieQdMJvXhRZUIRN1597L+BKvsyeiIlHHERnqjcuOLyodK3auJ3Y3zRezNKtKAhuQWYJfEgFHQ==}

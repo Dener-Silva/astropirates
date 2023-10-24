@@ -13,7 +13,8 @@ const app = new Application({
     backgroundAlpha: 0,
     antialias: true,
     resolution: devicePixelRatio,
-    autoDensity: true
+    autoDensity: true,
+    eventMode: 'none'
 });
 
 const resize = () => {
