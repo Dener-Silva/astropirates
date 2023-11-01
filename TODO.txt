@@ -1,4 +1,4 @@
-- Backend
+- Backend - OK
 	- Networking - OK
 		- Receive data - OK
 		- Send data - OK
@@ -28,7 +28,7 @@
 		- Respawn invencibility - OK
 	- AI - OK
 	- Test screen to see server simulation in real time - OK
-	- Performance information screen
+	- Performance information screen - Deemed unnecessary
 - Front end
 	- Render (basic) - OK
 		- Stars - OK
@@ -70,14 +70,19 @@
 		- Bullets - OK
 	- Screen message when disconnected from server - OK
 	- CRT shader?
-    - UI
+    - UI - OK
 		- Install React - OK
         - Name choosing screen - OK
-        - High score screen
+        - High score screen - OK
             - Layout - OK
             - Fetch from database - OK
-			- Show score after match
-- Docs (To be expanded)
+			- Show score after match - OK
+	- Do not add palyergraphics twice - OK
+	- Only top3 on mobile - OK
 
-- Do not add palyergraphics twice - OK
-- Only top3 on mobile - OK
+- Docs
+	- README - OK
+	- Protocol
+	- Admin Page
+	- Production Server Configuration
+	- More?
