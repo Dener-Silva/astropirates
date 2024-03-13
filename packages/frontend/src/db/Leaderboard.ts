@@ -8,6 +8,7 @@ export class Leaderboard {
     private validPages = new Set<number>();
     private pendingPages = new Set<number>();
     count = 0;
+    version = 0;
 
     constructor() {
         // Delay to avoid "Uncaught ReferenceError"
@@ -20,6 +21,7 @@ export class Leaderboard {
                 const page = Math.floor(leaderboard.offset / this.pageSize);
                 this.validPages.add(page);
                 this.pendingPages.delete(page);
+                this.version++;
             }
             addTopicListener(ServerTopic.Leaderboard, leaderboardCallback);
             const invalidateCache = () => {

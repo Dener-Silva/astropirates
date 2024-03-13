@@ -1,6 +1,6 @@
 import { Type } from "avro-js";
 import { GameUpdate, NeverError, ServerTopic, destroyedType, topicType, welcomeType, Dictionary, fullGameUpdateType, Score, partialGameUpdateType, gameUpdateType, leaderboardType, rankType } from "dtos";
-import _react, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import _react, { Dispatch, SetStateAction, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Buffer } from "buffer";
 // Avro needs the Buffer constructor in global space
 window.Buffer = Buffer;
@@ -210,16 +210,15 @@ export function useIsDisconnected() {
  * @returns Leaderbord rows.
  */
 export function useLeaderboard() {
-    const [, rerender] = useState();
-
-    useEffect(() => {
-        addTopicListener(ServerTopic.Leaderboard, rerender);
-        addTopicListener(ServerTopic.InvalidateLeaderboardCache, rerender);
+    function subscribe(onStoreChange: () => void) {
+        addTopicListener(ServerTopic.Leaderboard, onStoreChange);
+        addTopicListener(ServerTopic.InvalidateLeaderboardCache, onStoreChange);
         return () => {
-            removeTopicListener(ServerTopic.Leaderboard, rerender);
-            removeTopicListener(ServerTopic.InvalidateLeaderboardCache, rerender);
+            removeTopicListener(ServerTopic.Leaderboard, onStoreChange);
+            removeTopicListener(ServerTopic.InvalidateLeaderboardCache, onStoreChange);
         }
-    }, []);
+    }
+    useSyncExternalStore(subscribe, () => leaderboardInstance.version);
 
     return leaderboardInstance;
 }
