@@ -125,9 +125,23 @@ export const partialGameUpdateType = avro.parse<PartialGameUpdate>({
     ]
 });
 
-class BigIntType extends avro.types.LogicalType<bigint, number> {
-    _fromValue(val: number) { return BigInt(val); };
-    _toValue(big: bigint) { return Number(big); };
+class BigIntType extends avro.types.LogicalType<bigint, bigint> {
+
+    _write(tap: avro.Tap, val: bigint): void {
+        // Split bigint in two, since AvroJS doesn't natively support bigint
+        tap.writeLong(Number(val >> 32n));
+        tap.writeLong(Number(val & 0xFFFFFFFFn));
+    }
+
+    _read(tap: avro.Tap): bigint {
+        let value = BigInt(tap.readLong()) << 32n;
+        return value | BigInt(tap.readLong());
+    }
+
+    _skip(tap: avro.Tap): void {
+        tap.skipLong()
+        tap.skipLong()
+    }
 }
 
 export type Destroyed = {

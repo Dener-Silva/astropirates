@@ -171,7 +171,7 @@ export class AI {
                 player = this.gameServer.addPlayer(id, nick, () => {
                     const score = this.gameServer.scoreboard[id];
                     if (score.score > 0) {
-                        this.db.addToLeaderboardBot(nick, this.gameServer.scoreboard[id].score);
+                        this.db.addToLeaderboardBot(id, this.gameServer.scoreboard[id]);
                         this.invalidateLeaderboardCache();
                     }
                 });

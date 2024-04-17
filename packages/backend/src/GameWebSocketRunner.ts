@@ -19,6 +19,7 @@ export class GameWebSocketRunner {
                 return;
             }
             const id = newId();
+            console.debug(`Welcome (ID ${id})`);
             const sendWelcome = () => {
                 this.needsFullUpdate.add(ws);
                 ws.send(welcomeType.toBuffer({
@@ -49,17 +50,21 @@ export class GameWebSocketRunner {
                             const onDestroyed = async (byWhom: string) => {
                                 const score = gameServer.scoreboard[id];
                                 ws.send(destroyedType.toBuffer({ topic: ServerTopic.Destroyed, byWhom }));
-                                if (score.score > 0) {
-                                    const [rowId, rowNumber] = await db.addToLeaderboard(score.nickname, score.score);
+                                const highScore = await db.getSessionHighScore(id)
+                                if (score.score > highScore) {
+                                    if (highScore) {
+                                        await db.updateLeaderboard(id, score);
+                                    } else {
+                                        await db.addToLeaderboard(id, score);
+                                    }
                                     this.broadcast(topicType, ServerTopic.InvalidateLeaderboardCache);
+                                    const [rowId, rowNumber] = await db.getLeaderboardPosition(id);
                                     ws.send(rankType.toBuffer({ topic: ServerTopic.Rank, rowId, rowNumber }));
                                 }
                             }
                             // Try to add player to the server
                             const player = gameServer.addPlayer(id, message.nickname, onDestroyed);
-                            if (player) {
-                                console.debug(`Welcome ${gameServer.scoreboard[id]?.nickname} (ID ${id})`);
-                            } else {
+                            if (!player) {
                                 ws.send(topicType.toBuffer(ServerTopic.NicknameAlreadyExists));
                             }
                             break;

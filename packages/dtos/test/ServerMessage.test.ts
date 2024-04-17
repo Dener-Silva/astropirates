@@ -117,3 +117,21 @@ test('Compare before and after serialization (Rank)', () => {
 
     expect(result).toEqual(message);
 });
+
+test.each([
+    0x7FFFFFFFFFFFFFFFn, // 63 bits, matching MariaDB maximum
+    0x7FFFFFFF00000000n,
+    0x00000000FFFFFFFFn,
+    -0x8000000000000000n // matching MariaDB minimum
+])('Large bigInt serialization and deserialization (Rank)', (rowId: bigint) => {
+    const message: Rank = {
+        topic: ServerTopic.Rank,
+        rowId, // 63 bits, matching MariaDB maximum
+        rowNumber: 123n
+    }
+
+    const buf = rankType.toBuffer(message);
+    const result = rankType.fromBuffer(buf);
+
+    expect(result).toEqual(message);
+});

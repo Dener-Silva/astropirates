@@ -29,8 +29,8 @@ declare module "avro-js" {
             constructor(attrs: any, opts?: any, Types?: any[])
             _values: any
             _underlyingType: any
-            abstract _toValue(value: T): V
-            abstract _fromValue(value: V): T
+            _toValue(value: T): V
+            _fromValue(value: V): T
             _read(tap: Tap): V
             _skip(tap: Tap): void
             _write(tap: Tap, val: V): void
