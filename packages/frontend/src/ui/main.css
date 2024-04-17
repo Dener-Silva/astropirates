@@ -165,6 +165,7 @@ td {
     box-shadow: 0px 0px 10px white inset, 0px 0px 10px white;
     background: black;
     overflow: hidden;
+    max-width: var(--modal-width);
 }
 
 #about-modal-content {
@@ -179,34 +180,34 @@ td {
 
 @keyframes open {
     0% {
-        max-width: 0;
+        transform: scaleX(0);
         max-height: 0;
     }
 
     50% {
-        max-width: var(--modal-width);
+        transform: scaleX(100%);
         max-height: 20px;
     }
 
     100% {
-        max-width: var(--modal-width);
+        transform: scaleX(100%);
         max-height: calc(100% - 20px);
     }
 }
 
 @keyframes close {
     0% {
-        max-width: var(--modal-width);
+        transform: scaleX(100%);
         max-height: calc(100% - 20px);
     }
 
     50% {
-        max-width: var(--modal-width);
+        transform: scaleX(100%);
         max-height: 20px;
     }
 
     100% {
-        max-width: 0;
+        transform: scaleX(0);
         max-height: 0;
     }
 }
@@ -288,7 +289,7 @@ td {
     align-items: center;
     padding: 20px 10px;
     gap: 20px;
-    width: min(var(--modal-width), 400px);
+    width: 400px;
 }
 
 #leaderboard-scroll {
