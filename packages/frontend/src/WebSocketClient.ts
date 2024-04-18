@@ -4,7 +4,7 @@ import _react, { Dispatch, SetStateAction, useEffect, useRef, useState, useSyncE
 import { Buffer } from "buffer";
 // Avro needs the Buffer constructor in global space
 window.Buffer = Buffer;
-import fossilDelta from "fossil-delta";
+import { ByteArray, applyDelta } from "fossil-delta";
 import { leaderboardInstance } from "./db/Leaderboard";
 
 // Connect to server
@@ -42,7 +42,7 @@ export function removeTopicListener<T = any>(topic: ServerTopic, callback: (mess
     }
 }
 
-let gameUpdateBuffer: Buffer | number[] | null = null;
+let gameUpdateBuffer: Buffer | Uint8Array | null = null;
 
 ws.addEventListener("message", ({ data }) => {
     const buffer = Buffer.from(data);
@@ -73,7 +73,7 @@ ws.addEventListener("message", ({ data }) => {
                 break;
             }
             const partialGameUpdate = partialGameUpdateType.fromBuffer(buffer);
-            gameUpdateBuffer = fossilDelta.apply(gameUpdateBuffer, partialGameUpdate.delta);
+            gameUpdateBuffer = applyDelta<Uint8Array>(gameUpdateBuffer, partialGameUpdate.delta);
             const gameUpdate = gameUpdateType.fromBuffer(Buffer.from(gameUpdateBuffer));
             listeners[ServerTopic.GameUpdate].forEach((c) => c(gameUpdate));
             listeners[ServerTopic.PartialGameUpdate].forEach((c) => c(gameUpdate));

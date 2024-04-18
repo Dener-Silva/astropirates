@@ -4,7 +4,7 @@ import { GameServer } from "./GameServer.js";
 import { tickrate } from './delta.js';
 import { newId } from "./newId.js";
 import { Database } from "./Database.js";
-import fossilDelta from "fossil-delta";
+import { createDelta } from "fossil-delta";
 import { Type } from "avro-js";
 
 export class GameWebSocketRunner {
@@ -113,7 +113,7 @@ export class GameWebSocketRunner {
             ...gameUpdate
         })
         const gameUpdateBuffer = gameUpdateType.toBuffer(gameUpdate);
-        const delta = Buffer.from(fossilDelta.create(this.previousGameUpdate, gameUpdateBuffer));
+        const delta = Buffer.from(createDelta(this.previousGameUpdate, gameUpdateBuffer));
         const partialGameUpdate = partialGameUpdateType.toBuffer({
             topic: ServerTopic.PartialGameUpdate,
             delta
