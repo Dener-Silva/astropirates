@@ -1,12 +1,8 @@
-import { AdminTopic, ClientTopic, Dictionary, GameObjectState, GameUpdate, Input, NeverError, ServerTopic, SetAiParameters, angleDistance, rotateTowards, setAiParametersType, topicType } from "dtos";
+import { AdminTopic, ClientTopic, Dictionary, GameObjectState, GameUpdate, Input, NeverError, Player, ServerTopic, SetAiParameters, angleDistance, distance, rotateTowards, setAiParametersType, topicType } from "dtos";
 import { GameServer } from "./GameServer";
 import { newId } from "./newId";
-import { GameWebSocketRunner } from "./GameWebSocketRunner";
-import { SweepAndPrune } from "./collision/SweepAndPrune";
-import { Circle } from "./collision/colliders/Circle";
-import { Collider } from "./collision/colliders/Collider";
 import { delta } from "./delta";
-import { WebSocket, WebSocketServer } from "ws";
+import { WebSocketServer } from "ws";
 import { Database } from "./Database";
 
 enum ActorState {
@@ -20,6 +16,7 @@ function randomAngle() {
 }
 
 type Actor = {
+    nick: string
     state: ActorState
     targetAngle: number
     input: Input
@@ -35,18 +32,20 @@ const defaultAiParameters = {
     chasingAISpeedMultiplier: 0.6,
     chasingPlayerSpeedMultiplier: 0.75,
     chasingAngularVelocity: 0.1,
-    aiVisionDistance: 300,
+    aiVisionDistance: 600,
     quantity: 3
 } as const;
 
 export class AI {
 
+    ids: string[] = []
     actors: Dictionary<Actor> = {}
-    players: Dictionary<Circle> = {}
-    sap = new SweepAndPrune();
     aiParameters: SetAiParameters = defaultAiParameters;
 
     constructor(private wss: WebSocketServer, private gameServer: GameServer, private db: Database) {
+
+        db.deleteBotsFromLeaderboard();
+
         wss.on('connection', (ws) => {
             if (ws.protocol !== 'admin') {
                 return;
@@ -65,7 +64,10 @@ export class AI {
                             break;
                         case AdminTopic.KillBots:
                             for (const id in this.actors) {
-                                this.gameServer.players[id].state = GameObjectState.Exploded
+                                const ai = this.gameServer.players[id];
+                                if (ai) {
+                                    ai.state = GameObjectState.Exploded
+                                }
                             }
                             break;
                         case AdminTopic.DeleteBotsFromLeaderboard:
@@ -85,46 +87,29 @@ export class AI {
                 } catch (e) {
                     console.error(e);
                 }
-            }
-            );
+            });
             ws.send(setAiParametersType.toBuffer(this.aiParameters));
         });
     }
 
     onGameUpdate(gameUpdate: GameUpdate) {
 
-        for (const [id, player] of Object.entries(gameUpdate.players)) {
-            let collider = this.players[id];
-            if (!collider) {
-                collider = this.players[id] = new Circle(this.aiParameters.aiVisionDistance / 2);
-                this.sap.add(collider);
-            }
-
-            collider.x = player.x;
-            collider.y = player.y;
-
-            if (player.state > GameObjectState.ToBeRemoved) {
-                const collider = this.players[id];
-                this.sap.remove(collider);
-                delete this.players[id];
-                if (this.actors[id]) {
-                    delete this.actors[id];
-                    this.gameServer.onPlayerLoggedOut(id);
-                }
-            }
-        }
-
-        for (const [a, b] of this.sap.update()) {
-            if (a.owner && a.collidesWith(b)) {
-                this.respondToEnemy(a.owner, b);
-            }
-            if (b.owner && b.collidesWith(a)) {
-                this.respondToEnemy(b.owner, a);
-            }
-        }
-
         for (const [id, actor] of Object.entries(this.actors)) {
             const input = actor.input;
+            const ai = gameUpdate.players[id];
+
+            if (!ai) {
+                this.addPlayer(id, actor, gameUpdate);
+                continue;
+            }
+
+            for (const [enemyId, enemy] of Object.entries(gameUpdate.players)) {
+                if (enemy === ai) continue;
+                if (distance(ai.x, ai.y, enemy.x, enemy.y) < this.aiParameters.aiVisionDistance) {
+                    this.respondToEnemy(id, ai, enemyId, enemy);
+                }
+            }
+
             switch (actor.state) {
                 case ActorState.Chasing:
                     const angleDist = Math.abs(angleDistance(input.angle, actor.targetAngle));
@@ -147,10 +132,9 @@ export class AI {
                     input.shoot = false;
                     input.magnitude = this.aiParameters.idleSpeed;
                     input.angle = rotateTowards(input.angle, actor.targetAngle, this.aiParameters.idleAngularVelocity);
-                    const collider = this.players[id];
                     // If on edge, go back to the center
-                    if (Math.hypot(collider.x, collider.y) > 1000) {
-                        const angleTowardsCenter = Math.atan2(collider.x, -collider.y) + Math.PI / 2;
+                    if (Math.hypot(ai.x, ai.y) > 1000) {
+                        const angleTowardsCenter = Math.atan2(ai.x, -ai.y) + Math.PI / 2;
                         actor.targetAngle = angleTowardsCenter;
                     } else if (Math.abs(angleDistance(input.angle, actor.targetAngle)) < this.aiParameters.idleAngularVelocity) {
                         actor.targetAngle = randomAngle();
@@ -162,24 +146,13 @@ export class AI {
             this.gameServer.registerInputs(id, { ...input });
         }
 
-        if (Object.keys(this.actors).length < this.aiParameters.quantity) {
-            const id = newId()
-            let player;
-            let count = 1;
-            while (!player) {
-                const nick = "BOT " + count++;
-                player = this.gameServer.addPlayer(id, nick, () => {
-                    const score = this.gameServer.scoreboard[id];
-                    if (score.score > 0) {
-                        this.db.addToLeaderboardBot(id, this.gameServer.scoreboard[id]);
-                        this.invalidateLeaderboardCache();
-                    }
-                });
-            }
-            const collider = this.players[id] = new Circle(this.aiParameters.aiVisionDistance);
-            collider.owner = player;
-            this.sap.add(collider);
+        const actorsQuantity = Object.keys(this.actors).length
+        if (actorsQuantity < this.aiParameters.quantity) {
+            // Spawn more actors
+            const id = this.ids[actorsQuantity] = this.ids[actorsQuantity] || newId();
+            const nick = "BOT " + (actorsQuantity + 1);
             this.actors[id] = {
+                nick,
                 state: ActorState.Idle,
                 targetAngle: randomAngle(),
                 input: {
@@ -192,16 +165,34 @@ export class AI {
                 chasingAi: false
             };
         }
+        if (actorsQuantity > this.aiParameters.quantity) {
+            // Delete actors
+            const id = this.ids[actorsQuantity - 1];
+            this.gameServer.onPlayerLoggedOut(id);
+            delete this.actors[id]
+        }
+
     }
 
-    respondToEnemy(ai: any, enemy: Collider) {
-        const actor = this.actors[ai.id];
+    addPlayer(id: string, actor: Actor, gameUpdate: GameUpdate) {
+        this.gameServer.addPlayer(id, actor.nick, async () => {
+            const highScore = await this.db.getSessionHighScore(id);
+            const score = gameUpdate.scoreboard[id];
+            if (score && score.score > highScore) {
+                await this.db.addToLeaderboard(id, score);
+                this.invalidateLeaderboardCache();
+            }
+        });
+        actor.state = ActorState.Idle
+    }
+
+    respondToEnemy(aiId: string, ai: Player, enemyId: string, enemy: Player) {
+        const actor = this.actors[aiId];
         actor.reactionTimer -= delta;
         // Don't chase if invulnerable
         if (actor.reactionTimer < 0 && ai.state !== GameObjectState.Invulnerable) {
             actor.state = ActorState.Chasing;
-            // Only AI colliders have owner
-            actor.chasingAi = Boolean(enemy.owner);
+            actor.chasingAi = Boolean(this.actors[enemyId]);
             actor.targetAngle = Math.atan2(enemy.x - ai.x, ai.y - enemy.y) - Math.PI / 2;
         }
     }

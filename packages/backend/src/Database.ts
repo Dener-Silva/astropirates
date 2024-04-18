@@ -84,19 +84,8 @@ export class Database {
         let conn;
         try {
             conn = await this.pool.getConnection();
-            const query = "insert into highscores(id, name, score) value (?, ?, ?)";
-            await conn.query(query, [this.generateId(gameId), score.nickname, score.score]);
-        } finally {
-            if (conn) conn.release();
-        }
-    }
-
-    async updateLeaderboard(gameId: string, score: Score) {
-        let conn;
-        try {
-            conn = await this.pool.getConnection();
-            const query = "update highscores set name = ?, score = ? where id = ?";
-            await conn.query(query, [score.nickname, score.score, this.generateId(gameId)]);
+            const query = "insert into highscores(id, name, score) value (?, ?, ?) on duplicate key update name = ?, score = ?";
+            await conn.query(query, [this.generateId(gameId), score.nickname, score.score, score.nickname, score.score]);
         } finally {
             if (conn) conn.release();
         }
@@ -110,27 +99,6 @@ export class Database {
             const posQuery = "select row_number_ from (select id, row_number() over (order by score desc, id asc) as row_number_ from highscores) sub where id = ?";
             const pos: RowNumberQueryResult = await conn.query(posQuery, [dbId]);
             return [dbId, pos[0].row_number_];
-        } finally {
-            if (conn) conn.release();
-        }
-    }
-
-    async addToLeaderboardBot(gameId: string, score: Score) {
-        let conn;
-        try {
-            conn = await this.pool.getConnection();
-            const select = "select id, score from highscores where name = ? limit 1";
-            const rows: DbLeaderboardRow[] = await conn.query(select, [score.nickname]);
-            if (rows.length) {
-                if (rows[0].score >= score.score) {
-                    return;
-                }
-                const query = "update highscores set name = ?, score = ? where id = ?";
-                await conn.query(query, [score.nickname, score.score, rows[0].id]);
-            } else {
-                const query = "insert into highscores(id, name, score) value (?, ?, ?)";
-                await conn.query(query, [this.generateId(gameId), score.nickname, score.score]);
-            }
         } finally {
             if (conn) conn.release();
         }

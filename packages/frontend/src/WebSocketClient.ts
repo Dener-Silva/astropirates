@@ -52,6 +52,9 @@ ws.addEventListener("message", ({ data }) => {
             const welcomeMessage = welcomeType.fromBuffer(buffer);
             listeners[topic].forEach((c) => c(welcomeMessage));
             break;
+        case ServerTopic.NicknameStartsWithBot:
+            listeners[topic].forEach((c) => c(topic));
+            break;
         case ServerTopic.NicknameAlreadyExists:
             listeners[topic].forEach((c) => c(topic));
             break;
@@ -111,19 +114,23 @@ export function sendMessage<T>(type: Type<T>, message: T) {
 /**
  * Special hook for showing the "Nickname is already taken" warning.
  */
-export function useNicknameAlreadyExists(): [boolean, Dispatch<SetStateAction<boolean>>] {
+export function useNicknameAlreadyExists(): [boolean, boolean, () => void] {
 
     const [alreadyExists, setAlreadyExists] = useState(false);
+    const [startsWithBot, setStartsWithBot] = useState(false);
 
-    const callback = () => setAlreadyExists(true);
+    const alreadyExistsCallback = () => setAlreadyExists(true);
+    const startsWithBotCallback = () => setStartsWithBot(true);
     useEffect(() => {
-        addTopicListener(ServerTopic.NicknameAlreadyExists, callback);
+        addTopicListener(ServerTopic.NicknameAlreadyExists, alreadyExistsCallback);
+        addTopicListener(ServerTopic.NicknameStartsWithBot, startsWithBotCallback);
         return () => {
-            removeTopicListener(ServerTopic.NicknameAlreadyExists, callback);
+            removeTopicListener(ServerTopic.NicknameAlreadyExists, alreadyExistsCallback);
+            removeTopicListener(ServerTopic.NicknameStartsWithBot, startsWithBotCallback);
         }
     }, []);
 
-    return [alreadyExists, setAlreadyExists];
+    return [alreadyExists, startsWithBot, () => { setAlreadyExists(false); setStartsWithBot(false) }];
 }
 
 /**

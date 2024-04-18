@@ -52,17 +52,17 @@ export class GameWebSocketRunner {
                                 ws.send(destroyedType.toBuffer({ topic: ServerTopic.Destroyed, byWhom }));
                                 const highScore = await db.getSessionHighScore(id)
                                 if (score.score > highScore) {
-                                    if (highScore) {
-                                        await db.updateLeaderboard(id, score);
-                                    } else {
-                                        await db.addToLeaderboard(id, score);
-                                    }
+                                    await db.addToLeaderboard(id, score);
                                     this.broadcast(topicType, ServerTopic.InvalidateLeaderboardCache);
                                     const [rowId, rowNumber] = await db.getLeaderboardPosition(id);
                                     ws.send(rankType.toBuffer({ topic: ServerTopic.Rank, rowId, rowNumber }));
                                 }
                             }
                             // Try to add player to the server
+                            if (message.nickname.startsWith('BOT ')) {
+                                ws.send(topicType.toBuffer(ServerTopic.NicknameStartsWithBot));
+                                break;
+                            }
                             const player = gameServer.addPlayer(id, message.nickname, onDestroyed);
                             if (!player) {
                                 ws.send(topicType.toBuffer(ServerTopic.NicknameAlreadyExists));

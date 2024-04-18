@@ -45,8 +45,9 @@ const ai = new AI(wss, gameServer, db);
 setImmediate(() =>
     setInterval(() => {
         const gameUpdate = gameServer.update();
-        webSocketServer.onGameUpdate(gameUpdate);
+        // AI updates first, so players can receive the update before cleanup
         ai.onGameUpdate(gameUpdate);
+        webSocketServer.onGameUpdate(gameUpdate);
         gameServer.cleanup();
     }, delta)
 )

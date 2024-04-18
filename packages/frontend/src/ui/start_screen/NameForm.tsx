@@ -8,7 +8,7 @@ import { sendMessage, useNicknameAlreadyExists } from "../../WebSocketClient";
 export const NameForm = () => {
 
     const [valid, setValid] = useState(false);
-    const [alreadyExists, setAlreadyExists] = useNicknameAlreadyExists();
+    const [alreadyExists, startsWithBot, clearErrors] = useNicknameAlreadyExists();
 
     const onSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -23,7 +23,7 @@ export const NameForm = () => {
 
     const onChange = (e: ChangeEvent<HTMLInputElement>) => {
         setValid(e.target.value.trim().length > 0);
-        setAlreadyExists(false);
+        clearErrors();
     }
 
     return (
@@ -35,8 +35,9 @@ export const NameForm = () => {
                     <input style={{ flex: 0 }} type="submit" name="go" value="GO" disabled={!valid} />
                 </div>
             </form>
-            <div className="warning" style={{ visibility: alreadyExists ? 'visible' : 'hidden' }}>
-                Nickname is already taken
+            <div className="warning" style={{ visibility: alreadyExists || startsWithBot ? 'visible' : 'hidden' }}>
+                {alreadyExists && "Nickname is already taken"}
+                {startsWithBot && "Nickname cannot start with BOT"}
             </div>
         </div>
     )

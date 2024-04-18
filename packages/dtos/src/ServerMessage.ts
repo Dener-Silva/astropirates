@@ -6,6 +6,7 @@ export enum ServerTopic {
     FullGameUpdate,
     PartialGameUpdate,
     NicknameAlreadyExists,
+    NicknameStartsWithBot,
     Destroyed,
     Leaderboard,
     InvalidateLeaderboardCache,
