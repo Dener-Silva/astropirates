@@ -26,6 +26,7 @@ export class Leaderboard {
             addTopicListener(ServerTopic.Leaderboard, leaderboardCallback);
             const invalidateCache = () => {
                 this.validPages.clear();
+                this.version++;
             }
             addTopicListener(ServerTopic.InvalidateLeaderboardCache, invalidateCache);
             // Fetch first page to initialize "count" variable
