@@ -126,24 +126,19 @@ export const partialGameUpdateType = avro.parse<PartialGameUpdate>({
     ]
 });
 
-class BigIntType extends avro.types.LogicalType<bigint, bigint> {
-
-    _write(tap: avro.Tap, val: bigint): void {
-        // Split bigint in two, since AvroJS doesn't natively support bigint
-        tap.writeLong(Number(val >> 32n));
-        tap.writeLong(Number(val & 0xFFFFFFFFn));
-    }
-
-    _read(tap: avro.Tap): bigint {
-        let value = BigInt(tap.readLong()) << 32n;
-        return value | BigInt(tap.readLong());
-    }
-
-    _skip(tap: avro.Tap): void {
-        tap.skipLong()
-        tap.skipLong()
-    }
-}
+// https://issues.apache.org/jira/browse/AVRO-3902
+const longType = avro.types.LongType.using({
+    fromBuffer: (buf: any) => buf.readBigInt64LE(),
+    toBuffer: (n: bigint) => {
+        const buf = Buffer.alloc(8);
+        buf.writeBigInt64LE(n);
+        return buf;
+    },
+    fromJSON: BigInt,
+    toJSON: Number,
+    isValid: (n: bigint) => typeof n === 'bigint',
+    compare: (n1: bigint, n2: bigint) => { return n1 === n2 ? 0 : (n1 < n2 ? -1 : 1); }
+});
 
 export type Destroyed = {
     topic: ServerTopic.Destroyed
@@ -181,17 +176,17 @@ export const leaderboardType = avro.parse<Leaderboard>({
                     name: "LeaderboardRow",
                     type: "record",
                     fields: [
-                        { name: "id", type: { type: "long", logicalType: "bigint" } },
+                        { name: "id", type: "long" },
                         { name: "name", type: "string" },
-                        { name: "score", type: { type: "long", logicalType: "bigint" } },
-                        { name: 'rank', type: { type: "long", logicalType: "bigint" } }
+                        { name: "score", type: "long" },
+                        { name: 'rank', type: "long" }
                     ]
                 }
             }
         },
-        { name: "count", type: { type: "long", logicalType: "bigint" } }
+        { name: "count", type: "long" }
     ]
-}, { logicalTypes: { "bigint": BigIntType } });
+}, { registry: { long: longType } });
 
 export type Rank = {
     topic: ServerTopic.Rank
@@ -204,7 +199,7 @@ export const rankType = avro.parse<Rank>({
     name: "Rank",
     fields: [
         { name: "topic", type: "int" },
-        { name: "rowId", type: { type: "long", logicalType: "bigint" } },
-        { name: "rowNumber", type: { type: "long", logicalType: "bigint" } },
+        { name: "rowId", type: "long" },
+        { name: "rowNumber", type: "long" },
     ]
-}, { logicalTypes: { "bigint": BigIntType } });
+}, { registry: { long: longType } });

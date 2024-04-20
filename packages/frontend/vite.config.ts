@@ -9,6 +9,9 @@ export default defineConfig({
     server: {
         port: 3000
     },
+    esbuild: {
+        keepNames: true,
+    },
     build: {
         outDir: 'dist',
         sourcemap: true,
@@ -22,7 +25,14 @@ export default defineConfig({
                     'pixi-js': ['pixi.js'],
                 }
             }
-        }
+        },
+        minify: 'terser',
+        terserOptions: {
+            compress: {
+                keep_fnames: /^using$/,
+                keep_classnames: /^LongType$/,
+            },
+        },
     },
     define: {
         'process.env': {}

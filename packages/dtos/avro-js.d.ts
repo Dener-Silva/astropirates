@@ -35,5 +35,8 @@ declare module "avro-js" {
             _skip(tap: Tap): void
             _write(tap: Tap, val: V): void
         }
+        export const LongType = {
+            using(params: any): any
+        }
     }
 }
