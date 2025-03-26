@@ -30,6 +30,12 @@ export class Database {
     idPrefix: bigint
 
     constructor() {
+        console.log(`Connecting to DB with settings:`);
+        console.log(`DB_HOST: ${process.env.DB_HOST}`);
+        console.log(`DB_PORT: ${process.env.DB_PORT}`);
+        console.log(`DB_DATABASE: ${process.env.DB_DATABASE}`);
+        console.log(`DB_USER: ${process.env.DB_USER}`);
+        console.log(`DB_PASSWORD: ${"".padEnd(process.env.DB_PASSWORD?.length || 0, "*")}`);
         this.pool = mariadb.createPool({
             host: process.env.DB_HOST,
             port: Number(process.env.DB_PORT),
