@@ -47,13 +47,15 @@ jobs:
         key: ${{ secrets.PRIVATE_SSH_KEY }}
         known_hosts: unnecessary
     - name: Adding known hosts
-      run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      env:
+        SSH_HOST: ${{ secrets.SSH_HOST }}
+      run: ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
     - name: Deploy back-end
       run: rsync -az --delete --no-perms --no-times packages/backend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/astropirates
     - name: Setup Pages
-      uses: actions/configure-pages@v3
+      uses: actions/configure-pages@v5
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@v1
+      uses: actions/upload-pages-artifact@v3
       with:
         path: './packages/frontend/dist'
     - name: Deploy to GitHub Pages
